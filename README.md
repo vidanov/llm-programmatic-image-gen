@@ -31,8 +31,8 @@ Image generation APIs charge $0.02-0.20 per image. For diagrams, charts, illustr
 
 This repo proves the thesis with working examples across the full renderer spectrum:
 
-- 🎯 **$0.0003/image for SVG**: one LLM call, browser renders for free
-- 🎨 **13-plate editorial series for $0.52**: consistent visual system from a style document
+- 🎯 **$0.0003/image for simple SVG** (Flash-tier model, ~800 tokens): one LLM call, browser renders for free. Complex illustrations on Opus/Fable cost $0.09–$0.38 per image — still editable and deterministic, but comparable to diffusion pricing. The sweet spot is mid-complexity work on efficient models.
+- 🎨 **8-plate editorial series**: consistent visual system from a single style document
 - 📊 **Parameterized templates**: change data, not prompts. Infinite variants from one generation
 - 🏗️ **Architecture diagrams that open in draw.io**: 270+ verified AWS icon mappings
 - 🌐 **3D scenes for $0.001**: Three.js, Blender, Godot accept code input
@@ -80,7 +80,7 @@ Even Unreal Engine quality at $0.003 is 7-70x cheaper than GPT Image 1.5 at $0.0
 
 | Example | What it shows | Tokens | Open |
 |---------|---------------|--------|------|
-| [Editorial illustrations](examples/editorial/) | 13-plate series, one style doc | ~1,200/plate | [SVGs](examples/editorial/) |
+| [Editorial illustrations](examples/editorial/) | 8-plate series, one style doc | ~1,200/plate | [SVGs](examples/editorial/) |
 | [Parameterized chart](examples/demo.html#live) | Drag sliders, SVG re-renders | ~1,000 | [Demo](https://labs.p.awsnavigator.com/code-as-canvas/demo.html#live) |
 | [Three.js crystal garden](examples/threejs-crystal-garden.html) | Interactive 3D, bloom, orbits | ~3,200 | [Live](https://labs.p.awsnavigator.com/code-as-canvas/threejs-crystal-garden.html) |
 | [Particle universe](examples/particle-universe.html) | Canvas 2D, 3 galaxies, 2600 particles | ~2,400 | [Live](https://labs.p.awsnavigator.com/code-as-canvas/particle-universe.html) |
@@ -154,13 +154,15 @@ The LLM pays for tokens. The renderer is free. Every output is diffable, scalabl
 
 ## Articles
 
-This repo accompanies a dev.to article series:
+This repo accompanies a dev.to article series ("Code as Canvas"):
 
-1. [The $0.0003 Image: SVG Generation on Bedrock](https://dev.to/vidanov)
-2. [Editorial Illustrations for $0.04 Each](https://dev.to/vidanov)
-3. [Architecture Diagrams That Don't Break](https://dev.to/vidanov)
-4. [From SVG to Unreal: The Renderer Spectrum](https://dev.to/vidanov)
-5. [Multi-Pass Consistency: 4 Models Compared](https://dev.to/vidanov)
+1. The $0.0003 Image: SVG Generation on Bedrock *(coming soon)*
+2. Editorial Illustrations for $0.04 Each *(coming soon)*
+3. Architecture Diagrams That Don't Break *(coming soon)*
+4. From SVG to Unreal: The Renderer Spectrum *(coming soon)*
+5. Multi-Pass Consistency: 4 Models Compared *(coming soon)*
+
+Links will be added as articles are published.
 
 ## Project structure
 
@@ -171,7 +173,7 @@ This repo accompanies a dev.to article series:
 │   ├── presentation.html            # Reveal.js slide deck
 │   ├── threejs-crystal-garden.html  # Three.js 3D scene
 │   ├── particle-universe.html       # Canvas 2D particle simulation
-│   ├── editorial/                   # 13-plate SVG illustration series
+│   ├── editorial/                   # 8-plate SVG illustration series
 │   ├── generative-flow-field.svg    # Animated flow visualization
 │   ├── manim-sine-wave.svg          # Math animation
 │   ├── isometric-data-center.svg    # Isometric server scene
@@ -184,9 +186,21 @@ This repo accompanies a dev.to article series:
 ├── docs/
 │   ├── hero-banner.svg              # Repo hero image
 │   ├── terminal-demo.svg            # Animated terminal demo
-│   └── social-preview.png           # 1280x640 social card
+│   └── social-preview.svg           # 1280x640 social card
+├── skills/
+│   └── programmatic-viz.md          # Drop-in LLM skill (Claude/Kiro/agents)
 └── README.md
 ```
+
+## LLM Skill
+
+The [`skills/programmatic-viz.md`](skills/programmatic-viz.md) file is a drop-in instruction set for any LLM. Paste it into:
+
+- **Claude Projects** as custom instructions
+- **Kiro** as `.kiro/skills/programmatic-viz/SKILL.md`
+- **Any agent framework** as a system prompt
+
+It teaches the model to route visual requests correctly (diffusion vs. code), select the cheapest renderer, and generate self-contained output files. No dependencies, no API keys required for the code-generation path.
 
 ## Contributing
 
