@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLM → Three.js: Procedural Crystal Garden</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0a0f0d; overflow: hidden; font-family: ui-monospace, monospace; }
+canvas { display: block; }
+#overlay {
+  position: fixed; top: 20px; left: 20px; z-index: 10;
+  background: rgba(10,15,13,0.85); border: 1px solid rgba(34,197,94,0.3);
+  padding: 16px 20px; border-radius: 8px; color: #e8f5ec;
+  backdrop-filter: blur(8px);
+}
+#overlay h3 { font-size: 11px; letter-spacing: 2px; color: #22c55e; margin-bottom: 8px; text-transform: uppercase; }
+#overlay p { font-size: 11px; color: #6b8a74; line-height: 1.6; }
+#overlay .stat { display: inline-block; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); padding: 3px 8px; border-radius: 4px; margin: 4px 4px 0 0; font-size: 10px; color: #4ade80; }
+#code-panel {
+  position: fixed; bottom: 20px; right: 20px; z-index: 10;
+  background: rgba(10,15,13,0.9); border: 1px solid rgba(34,197,94,0.2);
+  padding: 14px 18px; border-radius: 8px; max-width: 380px;
+  backdrop-filter: blur(8px);
+}
+#code-panel pre { font-size: 9.5px; color: #6b8a74; line-height: 1.5; overflow: hidden; max-height: 180px; }
+#code-panel pre .kw { color: #ff7b72; }
+#code-panel pre .fn { color: #d2a8ff; }
+#code-panel pre .str { color: #a5d6ff; }
+#code-panel pre .num { color: #79c0ff; }
+#code-panel pre .cm { color: #484f58; }
+#code-panel .label { font-size: 9px; color: #22c55e; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+<div id="overlay">
+  <h3>LLM → Three.js</h3>
+  <p>Procedural crystal garden. No assets loaded.<br>Every vertex computed from code.</p>
+  <div style="margin-top:8px;">
+    <span class="stat">~3,200 tokens</span>
+    <span class="stat">$0.0013</span>
+    <span class="stat">60fps</span>
+    <span class="stat">Interactive</span>
+  </div>
+</div>
+<div id="code-panel">
+  <div class="label">Generated code (excerpt)</div>
+  <pre><span class="cm">// Crystal geometry from parametric equations</span>
+<span class="kw">function</span> <span class="fn">createCrystal</span>(h, facets, taper) {
+  <span class="kw">const</span> geo = <span class="kw">new</span> THREE.<span class="fn">ConeGeometry</span>(
+    <span class="num">0.3</span>, h, facets, <span class="num">1</span>, <span class="kw">false</span>
+  );
+  geo.scale(<span class="num">1</span>, <span class="num">1</span>, taper);
+  <span class="kw">return</span> geo;
+}
+<span class="cm">// Iridescent material via custom shader</span>
+<span class="kw">const</span> mat = <span class="kw">new</span> THREE.<span class="fn">MeshPhysicalMaterial</span>({
+  color: <span class="num">0x22c55e</span>,
+  metalness: <span class="num">0.1</span>,
+  roughness: <span class="num">0.05</span>,
+  transmission: <span class="num">0.8</span>,
+  thickness: <span class="num">1.5</span>,
+  iridescence: <span class="num">1.0</span>,
+});</pre>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+// Scene setup
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x0a0f0d, 0.035);
+
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(5, 4, 8);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.5;
+controls.target.set(0, 1.5, 0);
+
+// Post-processing bloom
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.8, 0.4, 0.2);
+composer.addPass(bloom);
+
+// Lighting
+const ambient = new THREE.AmbientLight(0x1a3a2a, 0.4);
+scene.add(ambient);
+
+const mainLight = new THREE.DirectionalLight(0xfff4e0, 1.2);
+mainLight.position.set(5, 10, 5);
+mainLight.castShadow = true;
+scene.add(mainLight);
+
+const rimLight = new THREE.PointLight(0x22c55e, 2, 20);
+rimLight.position.set(-3, 5, -3);
+scene.add(rimLight);
+
+const fillLight = new THREE.PointLight(0x4ade80, 1, 15);
+fillLight.position.set(3, 2, 5);
+scene.add(fillLight);
+
+// Ground plane
+const groundGeo = new THREE.CircleGeometry(12, 64);
+const groundMat = new THREE.MeshStandardMaterial({
+  color: 0x0a1f14,
+  metalness: 0.2,
+  roughness: 0.8,
+});
+const ground = new THREE.Mesh(groundGeo, groundMat);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// Seeded random
+let seed = 42;
+function rand() { seed = (seed * 1664525 + 1013904223) & 0xFFFFFFFF; return (seed >>> 0) / 0xFFFFFFFF; }
+
+// Crystal creation
+const crystals = [];
+const crystalColors = [0x22c55e, 0x4ade80, 0x86efac, 0x10b981, 0x059669, 0x34d399, 0x6ee7b7];
+
+function createCrystal(x, z) {
+  const height = 0.8 + rand() * 3.5;
+  const facets = Math.floor(4 + rand() * 5);
+  const taper = 0.4 + rand() * 0.6;
+  
+  const geo = new THREE.ConeGeometry(0.15 + rand() * 0.25, height, facets, 1, false);
+  
+  const color = crystalColors[Math.floor(rand() * crystalColors.length)];
+  const mat = new THREE.MeshPhysicalMaterial({
+    color: color,
+    metalness: 0.05 + rand() * 0.15,
+    roughness: 0.02 + rand() * 0.08,
+    transmission: 0.6 + rand() * 0.35,
+    thickness: 0.5 + rand() * 2,
+    iridescence: 0.5 + rand() * 0.5,
+    iridescenceIOR: 1.3 + rand() * 0.5,
+    ior: 1.5 + rand() * 0.5,
+    envMapIntensity: 1.5,
+    clearcoat: 0.5 + rand() * 0.5,
+    clearcoatRoughness: 0.05,
+  });
+  
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.set(x, height / 2, z);
+  
+  // Slight random tilt
+  mesh.rotation.x = (rand() - 0.5) * 0.3;
+  mesh.rotation.z = (rand() - 0.5) * 0.3;
+  mesh.scale.set(taper, 1, taper);
+  
+  mesh.userData = {
+    baseY: height / 2,
+    phase: rand() * Math.PI * 2,
+    speed: 0.3 + rand() * 0.7,
+    amplitude: 0.02 + rand() * 0.05,
+  };
+  
+  scene.add(mesh);
+  crystals.push(mesh);
+  
+  // Add small cluster crystals
+  if (rand() > 0.4) {
+    for (let i = 0; i < Math.floor(1 + rand() * 3); i++) {
+      const ch = 0.3 + rand() * 1.0;
+      const cf = Math.floor(4 + rand() * 4);
+      const cgeo = new THREE.ConeGeometry(0.08 + rand() * 0.12, ch, cf);
+      const cmesh = new THREE.Mesh(cgeo, mat.clone());
+      cmesh.material.color = new THREE.Color(crystalColors[Math.floor(rand() * crystalColors.length)]);
+      const angle = rand() * Math.PI * 2;
+      const dist = 0.2 + rand() * 0.4;
+      cmesh.position.set(x + Math.cos(angle) * dist, ch / 2, z + Math.sin(angle) * dist);
+      cmesh.rotation.x = (rand() - 0.5) * 0.5;
+      cmesh.rotation.z = (rand() - 0.5) * 0.5;
+      cmesh.userData = {
+        baseY: ch / 2,
+        phase: rand() * Math.PI * 2,
+        speed: 0.5 + rand() * 1.0,
+        amplitude: 0.01 + rand() * 0.03,
+      };
+      scene.add(cmesh);
+      crystals.push(cmesh);
+    }
+  }
+}
+
+// Place crystals in organic clusters
+for (let i = 0; i < 25; i++) {
+  const angle = rand() * Math.PI * 2;
+  const radius = 1 + rand() * 5;
+  const x = Math.cos(angle) * radius;
+  const z = Math.sin(angle) * radius;
+  createCrystal(x, z);
+}
+
+// Floating particles
+const particleCount = 500;
+const particleGeo = new THREE.BufferGeometry();
+const positions = new Float32Array(particleCount * 3);
+const particleSpeeds = new Float32Array(particleCount);
+
+for (let i = 0; i < particleCount; i++) {
+  positions[i * 3] = (rand() - 0.5) * 16;
+  positions[i * 3 + 1] = rand() * 8;
+  positions[i * 3 + 2] = (rand() - 0.5) * 16;
+  particleSpeeds[i] = 0.01 + rand() * 0.03;
+}
+particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+const particleMat = new THREE.PointsMaterial({
+  color: 0x4ade80,
+  size: 0.04,
+  transparent: true,
+  opacity: 0.6,
+  blending: THREE.AdditiveBlending,
+});
+const particles = new THREE.Points(particleGeo, particleMat);
+scene.add(particles);
+
+// Animation
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  
+  // Animate crystals (gentle hover)
+  crystals.forEach(c => {
+    const d = c.userData;
+    c.position.y = d.baseY + Math.sin(t * d.speed + d.phase) * d.amplitude;
+  });
+  
+  // Animate particles (float upward)
+  const pos = particles.geometry.attributes.position.array;
+  for (let i = 0; i < particleCount; i++) {
+    pos[i * 3 + 1] += particleSpeeds[i];
+    if (pos[i * 3 + 1] > 8) pos[i * 3 + 1] = 0;
+  }
+  particles.geometry.attributes.position.needsUpdate = true;
+  
+  // Animate lights
+  rimLight.position.x = Math.cos(t * 0.3) * 4;
+  rimLight.position.z = Math.sin(t * 0.3) * 4;
+  fillLight.intensity = 1 + Math.sin(t * 0.5) * 0.3;
+  
+  controls.update();
+  composer.render();
+}
+animate();
+
+// Resize
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  composer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Kiro agent config (local)
+.kiro/
+
+# Build artifacts
+*.pdf
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Node (if any tooling added later)
+node_modules/

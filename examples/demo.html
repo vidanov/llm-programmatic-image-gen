@@ -1,0 +1,2555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLM Programmatic Image Generation — Interactive Demo</title>
+<meta name="description" content="Interactive demo: LLM writes code, renderer produces images. SVG, Three.js, Canvas, Blender, Unreal Engine — all 100× cheaper than diffusion models.">
+<meta property="og:title" content="Code as Canvas — Interactive Demo">
+<meta property="og:description" content="LLM writes code, renderer produces images. From $0.0003/image. Live examples, cost calculator, benchmarks.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="author" content="Alexey Vidanov">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --ink: #1a2e23;
+  --paper: #f4f9f6;
+  --card: #ffffff;
+  --accent: #16a34a;
+  --accent-dark: #14532d;
+  --accent-tint: #e8f5ec;
+  --accent-mid: #22c55e;
+  --accent-light: #bbf7d0;
+  --muted: #5a7065;
+  --line: #cde5d6;
+  --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  --sans: "Helvetica Neue", Helvetica, Arial, ui-sans-serif, sans-serif;
+}
+html { scroll-behavior: smooth; }
+body { font-family: var(--sans); background: var(--paper); color: var(--ink); line-height: 1.6; }
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--accent-dark); color: #fff;
+  padding: 12px 24px; display: flex; align-items: center; gap: 28px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+}
+.topbar .brand { font-weight: 700; color: var(--accent-light); }
+.topbar nav { display: flex; gap: 24px; }
+.topbar nav a { color: rgba(255,255,255,0.6); text-decoration: none; transition: color 0.2s; }
+.topbar nav a:hover, .topbar nav a.active { color: #fff; }
+.wrap { max-width: 1060px; margin: 0 auto; padding: 48px 24px 60px; }
+section { margin-bottom: 72px; }
+.s-head { border-top: 2px solid var(--accent); padding-top: 14px; margin-bottom: 28px; }
+.s-kicker { font-family: var(--mono); font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; }
+.s-title { font-size: 26px; font-weight: 700; line-height: 1.2; margin-bottom: 6px; }
+.s-desc { color: var(--muted); font-size: 14px; max-width: 560px; }
+.panel { background: var(--card); border: 1px solid var(--line); padding: 28px; margin-bottom: 20px; }
+.panel-title { font-family: var(--mono); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; color: var(--accent-dark); }
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 768px) { .split { grid-template-columns: 1fr; } }
+.btn {
+  display: inline-block; font-family: var(--mono); font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+  padding: 10px 20px; border: 1px solid var(--line); background: var(--card); color: var(--ink);
+  cursor: pointer; transition: all 0.2s; text-decoration: none;
+}
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn-green {
+  display: inline-block; font-family: var(--mono); font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+  padding: 10px 20px; border: 1px solid var(--accent); background: var(--accent); color: #fff;
+  cursor: pointer; transition: all 0.2s; text-decoration: none;
+}
+.btn-green:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
+.stat { text-align: center; padding: 16px; }
+.stat-value { font-family: var(--mono); font-size: 28px; font-weight: 700; color: var(--accent-dark); }
+.stat-label { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.bar-row { margin-bottom: 14px; }
+.bar-label { font-family: var(--mono); font-size: 11px; display: flex; justify-content: space-between; color: var(--ink); margin-bottom: 4px; }
+.bar-label .cost { font-weight: 600; }
+.bar-track { height: 6px; background: var(--accent-tint); width: 100%; }
+.bar-fill { height: 100%; transition: width 0.5s ease; }
+.ctable { width: 100%; border-collapse: collapse; font-size: 12px; }
+.ctable th { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; text-align: left; padding: 8px 10px; border-bottom: 2px solid var(--accent); color: var(--accent-dark); }
+.ctable td { padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.ctable tr:hover td { background: var(--accent-tint); }
+.ctable .num { font-family: var(--mono); font-weight: 600; }
+.badge { display: inline-block; font-family: var(--mono); font-size: 9px; padding: 2px 6px; letter-spacing: 0.3px; }
+.badge-ok { background: var(--accent-tint); color: var(--accent-dark); }
+.badge-warn { background: #fef3c7; color: #92400e; }
+.insight { border-left: 3px solid var(--accent); padding: 14px 18px; background: var(--accent-tint); margin: 20px 0; font-size: 13px; }
+.insight b { color: var(--accent-dark); }
+.slider-row { display: flex; align-items: center; gap: 12px; margin: 10px 0; }
+.slider-row label { font-family: var(--mono); font-size: 10px; min-width: 100px; color: var(--muted); text-transform: uppercase; }
+.slider-row input[type="range"] { flex: 1; accent-color: var(--accent); height: 4px; }
+.slider-row .val { font-family: var(--mono); font-size: 12px; font-weight: 600; min-width: 50px; color: var(--accent-dark); text-align: right; }
+.tabs { display: flex; gap: 0; border-bottom: 1px solid var(--line); margin-bottom: 20px; }
+.tab { font-family: var(--mono); font-size: 10px; padding: 8px 16px; cursor: pointer; letter-spacing: 0.5px; text-transform: uppercase; color: var(--muted); border-bottom: 2px solid transparent; transition: all 0.2s; }
+.tab:hover { color: var(--ink); }
+.tab.active { color: var(--accent-dark); border-bottom-color: var(--accent); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.svg-preview { background: var(--paper); border: 1px solid var(--line); padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 180px; }
+.code-block { background: var(--accent-dark); color: var(--accent-light); font-family: var(--mono); font-size: 11px; padding: 16px; overflow-x: auto; line-height: 1.6; white-space: pre-wrap; word-break: break-all; max-height: 200px; overflow-y: auto; }
+
+/* HERO ANIMATIONS */
+@keyframes heroGlow {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(22,163,74,0.3)); }
+  50% { filter: drop-shadow(0 0 20px rgba(22,163,74,0.6)); }
+}
+@keyframes heroFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes heroPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+@keyframes dataFlow {
+  0% { stroke-dashoffset: 20; }
+  100% { stroke-dashoffset: 0; }
+}
+@keyframes typeIn {
+  from { width: 0; }
+  to { width: 100%; }
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+@keyframes particleFloat {
+  0% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+  50% { transform: translate(var(--dx), var(--dy)) scale(1.2); opacity: 1; }
+  100% { transform: translate(calc(var(--dx)*2), calc(var(--dy)*2)) scale(0.8); opacity: 0; }
+}
+.hero-container {
+  position: relative;
+  background: linear-gradient(135deg, var(--accent-dark) 0%, #0a3d1e 100%);
+  border: 1px solid var(--accent);
+  padding: 48px 40px;
+  margin-bottom: 32px;
+  overflow: hidden;
+}
+.hero-particles {
+  position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+}
+.hero-particle {
+  position: absolute;
+  width: 4px; height: 4px;
+  background: var(--accent-mid);
+  border-radius: 50%;
+  animation: particleFloat 4s ease-in-out infinite;
+}
+.hero-grid {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(22,163,74,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(22,163,74,0.06) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+.hero-title {
+  font-size: 38px; font-weight: 800; color: #fff;
+  line-height: 1.15; max-width: 580px;
+  position: relative; z-index: 2;
+}
+.hero-title .accent { color: var(--accent-light); }
+.hero-sub {
+  color: rgba(255,255,255,0.7); font-size: 15px;
+  max-width: 500px; margin-top: 14px; position: relative; z-index: 2;
+}
+.hero-terminal {
+  position: absolute; right: 40px; top: 50%; transform: translateY(-50%);
+  background: rgba(0,0,0,0.5); border: 1px solid rgba(22,163,74,0.4);
+  padding: 16px 20px; font-family: var(--mono); font-size: 11px;
+  color: var(--accent-light); min-width: 240px;
+  animation: heroFloat 3s ease-in-out infinite;
+  z-index: 2;
+}
+.hero-terminal::before {
+  content: '● ● ●';
+  display: block; font-size: 7px; color: rgba(255,255,255,0.3);
+  margin-bottom: 10px; letter-spacing: 3px;
+}
+.hero-terminal .line { margin: 3px 0; opacity: 0; animation: fadeInLine 0.3s forwards; }
+.hero-terminal .cursor {
+  display: inline-block; width: 7px; height: 13px;
+  background: var(--accent-light); animation: blink 1s step-end infinite;
+  vertical-align: middle; margin-left: 2px;
+}
+@keyframes fadeInLine {
+  to { opacity: 1; }
+}
+.hero-stats {
+  display: flex; gap: 32px; margin-top: 28px; position: relative; z-index: 2;
+}
+.hero-stat-val {
+  font-family: var(--mono); font-size: 24px; font-weight: 700; color: var(--accent-light);
+}
+.hero-stat-label {
+  font-family: var(--mono); font-size: 9px; color: rgba(255,255,255,0.5);
+  text-transform: uppercase; letter-spacing: 1px; margin-top: 2px;
+}
+@media (max-width: 768px) {
+  .hero-terminal { display: none; }
+  .hero-title { font-size: 28px; }
+}
+
+/* Variation selector for hybrid section */
+.variation-tabs {
+  display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
+}
+.variation-tab {
+  font-family: var(--mono); font-size: 10px; padding: 6px 14px;
+  cursor: pointer; letter-spacing: 0.5px; text-transform: uppercase;
+  background: var(--card); border: 1px solid var(--line); color: var(--muted);
+  transition: all 0.2s;
+}
+.variation-tab:hover { border-color: var(--accent); color: var(--accent); }
+.variation-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.variation-content { display: none; }
+.variation-content.active { display: block; }
+
+/* Benchmark section SVG sizing */
+#benchmark .svg-preview svg {
+  width: 100%;
+  height: auto;
+  max-height: 300px;
+  display: block;
+}
+#benchmark .svg-preview > div {
+  width: 100%;
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="brand">Code as Canvas</span>
+  <nav>
+    <a href="#concept" class="active">Concept</a>
+    <a href="#compare">Compare</a>
+    <a href="#live">Live Demo</a>
+    <a href="#gallery">Gallery</a>
+    <a href="#archdiagram">Draw.io</a>
+    <a href="#hybrid">Hybrid</a>
+    <a href="#engines">Engines</a>
+    <a href="#benchmark">Benchmark</a>
+  </nav>
+</div>
+
+<div class="wrap">
+
+<!-- ANIMATED HERO -->
+<section id="concept" style="padding-top:40px;">
+  <div class="hero-container">
+    <div class="hero-grid"></div>
+    <div class="hero-particles" id="heroParticles"></div>
+
+    <div class="hero-title">
+      When the <span class="accent">LLM</span> becomes<br>the rendering engine
+    </div>
+    <div class="hero-sub">
+      Diffusion models guess at pixels. Code specifies them. One approach costs $0.08 per image and hallucinates your text. The other costs $0.0006 and renders it perfectly.
+    </div>
+
+    <div class="hero-stats">
+      <div><div class="hero-stat-val" id="heroCounter1">600×</div><div class="hero-stat-label">Cheaper</div></div>
+      <div><div class="hero-stat-val" id="heroCounter2">0ms</div><div class="hero-stat-label">Render time</div></div>
+      <div><div class="hero-stat-val" id="heroCounter3">100%</div><div class="hero-stat-label">Text accuracy</div></div>
+    </div>
+
+    <div class="hero-terminal" id="heroTerminal">
+      <div class="line" style="animation-delay:0.5s;"><span style="color:#4ade80;">$</span> prompt: "cloud architecture diagram"</div>
+      <div class="line" style="animation-delay:1.2s;"><span style="color:#fbbf24;">→</span> generating SVG... (1.2s)</div>
+      <div class="line" style="animation-delay:2s;"><span style="color:#4ade80;">✓</span> 847 tokens · $0.0003</div>
+      <div class="line" style="animation-delay:2.8s;"><span style="color:#4ade80;">✓</span> rendered: 1200×800px</div>
+      <div class="line" style="animation-delay:3.5s;"><span style="color:#60a5fa;">△</span> editable, scalable, perfect<span class="cursor"></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- PIPELINE DIAGRAM (arrows fixed) -->
+<section>
+  <div class="panel" style="padding:32px 24px;overflow-x:auto;">
+    <svg viewBox="0 0 720 130" width="100%" style="max-width:720px;display:block;margin:0 auto;">
+      <defs>
+        <marker id="arrowGreen" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#16a34a"/>
+        </marker>
+      </defs>
+
+      <!-- Step 1: Prompt -->
+      <rect x="10" y="30" width="130" height="64" rx="4" fill="#e8f5ec" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="75" y="55" font-family="ui-monospace,monospace" font-size="10" fill="#14532d" text-anchor="middle" font-weight="700">PROMPT</text>
+      <text x="75" y="73" font-family="ui-monospace,monospace" font-size="8" fill="#5a7065" text-anchor="middle">"cloud icon, blue"</text>
+
+      <!-- Arrow 1→2 -->
+      <line x1="145" y1="62" x2="185" y2="62" stroke="#16a34a" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+      <!-- Step 2: LLM -->
+      <rect x="190" y="22" width="150" height="80" rx="4" fill="#14532d" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="265" y="52" font-family="ui-monospace,monospace" font-size="11" fill="#bbf7d0" text-anchor="middle" font-weight="700">LLM</text>
+      <text x="265" y="68" font-family="ui-monospace,monospace" font-size="8" fill="rgba(255,255,255,0.6)" text-anchor="middle">reasoning</text>
+      <text x="265" y="82" font-family="ui-monospace,monospace" font-size="8" fill="rgba(255,255,255,0.6)" text-anchor="middle">+ code generation</text>
+
+      <!-- Arrow 2→3 -->
+      <line x1="345" y1="62" x2="385" y2="62" stroke="#16a34a" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+      <!-- Step 3: Code -->
+      <rect x="390" y="26" width="140" height="72" rx="4" fill="#f0fdf4" stroke="#cde5d6" stroke-width="1.5"/>
+      <text x="406" y="48" font-family="ui-monospace,monospace" font-size="9" fill="#14532d">&lt;svg&gt;</text>
+      <text x="414" y="62" font-family="ui-monospace,monospace" font-size="8" fill="#5a7065">  &lt;path d="M..."</text>
+      <text x="414" y="74" font-family="ui-monospace,monospace" font-size="8" fill="#5a7065">  &lt;text&gt;94.7%</text>
+      <text x="406" y="88" font-family="ui-monospace,monospace" font-size="9" fill="#14532d">&lt;/svg&gt;</text>
+
+      <!-- Arrow 3→4 -->
+      <line x1="535" y1="62" x2="575" y2="62" stroke="#16a34a" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+      <!-- Step 4: Rendered Image -->
+      <rect x="580" y="26" width="130" height="72" rx="4" fill="white" stroke="#cde5d6" stroke-width="1.5"/>
+      <circle cx="612" cy="50" r="11" fill="#e8f5ec" stroke="#16a34a" stroke-width="1"/>
+      <rect x="630" y="46" width="38" height="5" fill="#16a34a" opacity="0.7" rx="1.5"/>
+      <rect x="630" y="55" width="26" height="4" fill="#cde5d6" rx="1"/>
+      <rect x="598" y="72" width="90" height="4" fill="#e8f5ec" rx="1"/>
+      <rect x="598" y="80" width="60" height="3" fill="#e8f5ec" rx="1"/>
+
+      <!-- Labels below -->
+      <text x="75" y="115" font-family="ui-monospace,monospace" font-size="8" fill="#5a7065" text-anchor="middle">INPUT</text>
+      <text x="265" y="120" font-family="ui-monospace,monospace" font-size="8" fill="#5a7065" text-anchor="middle">$0.0006 TOKENS</text>
+      <text x="460" y="115" font-family="ui-monospace,monospace" font-size="8" fill="#5a7065" text-anchor="middle">SVG / HTML / PY</text>
+      <text x="645" y="115" font-family="ui-monospace,monospace" font-size="8" fill="#5a7065" text-anchor="middle">EDITABLE IMAGE</text>
+    </svg>
+  </div>
+
+  <div style="display:flex;gap:12px;margin-top:24px;">
+    <a href="#live" class="btn-green">Try live demo</a>
+    <a href="#compare" class="btn">See costs</a>
+  </div>
+</section>
+
+
+<!-- COST COMPARISON -->
+<section id="compare">
+  <div class="s-head">
+    <div class="s-kicker">Economics</div>
+    <h2 class="s-title">The cost curve bends at the first image</h2>
+    <p class="s-desc">Diffusion charges per render. Code charges per token. At scale, one of these lines goes flat.</p>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Monthly cost calculator</div>
+    <div class="slider-row">
+      <label>Images/mo:</label>
+      <input type="range" id="volumeSlider" min="100" max="50000" value="1000" step="100">
+      <span class="val" id="volumeVal">1,000</span>
+    </div>
+
+    <div style="margin-top:20px;">
+      <div class="bar-row">
+        <div class="bar-label"><span>GPT Image 1.5 ($0.034/img med)</span><span class="cost" id="dalleLabel">$34</span></div>
+        <div class="bar-track"><div class="bar-fill" id="dalleBar" style="width:100%;background:#b45309;"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><span>Nano Banana 2 ($0.067/img 1K)</span><span class="cost" id="sdLabel">$67</span></div>
+        <div class="bar-track"><div class="bar-fill" id="sdBar" style="width:33%;background:#d97706;"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><span>gpt-image-1-mini ($0.011/img)</span><span class="cost" id="sonnetLabel">$11</span></div>
+        <div class="bar-track"><div class="bar-fill" id="sonnetBar" style="width:50%;background:var(--accent);opacity:0.6;"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><span>LLM→SVG Flash ($0.0006/img)</span><span class="cost" id="flashLabel" style="color:var(--accent);">$0.60</span></div>
+        <div class="bar-track"><div class="bar-fill" id="flashBar" style="width:1%;background:var(--accent);"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><span>Unsplash + overlay ($0.003)</span><span class="cost" id="unsplashLabel" style="color:var(--accent);">$3.00</span></div>
+        <div class="bar-track"><div class="bar-fill" id="unsplashBar" style="width:5%;background:var(--accent-dark);"></div></div>
+      </div>
+    </div>
+
+    <div class="insight">
+      <b>At <span id="savingsVolume">1,000</span> images/month:</b>
+      Flash SVG saves <span id="savingsAmount" style="font-weight:700;color:var(--accent-dark);">$59.40</span> vs GPT Image 1.5.
+      That is <span id="savingsMultiplier" style="font-weight:700;color:var(--accent-dark);">100x</span> cheaper.
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Comparison matrix</div>
+    <div style="overflow-x:auto;">
+    <table class="ctable">
+      <thead><tr><th>Method</th><th>Cost/img</th><th>Speed</th><th>Text</th><th>Editable</th><th>Photo</th></tr></thead>
+      <tbody>
+        <tr><td>GPT Image 1.5 (OpenAI)</td><td class="num">$0.009–0.20</td><td>3–10s</td><td><span class="badge badge-ok">Good</span></td><td>No</td><td><span class="badge badge-ok">Yes</span></td></tr>
+        <tr><td>gpt-image-1-mini</td><td class="num">$0.005–0.05</td><td>2–6s</td><td><span class="badge badge-ok">Good</span></td><td>No</td><td><span class="badge badge-ok">Yes</span></td></tr>
+        <tr><td>Nano Banana 2 (Google)</td><td class="num">$0.045–0.15</td><td>2–8s</td><td><span class="badge badge-ok">Good</span></td><td>No</td><td><span class="badge badge-ok">Yes</span></td></tr>
+        <tr style="background:var(--accent-tint);"><td><b>LLM → SVG</b></td><td class="num" style="color:var(--accent-dark);">$0.0003–0.045</td><td>1–5s</td><td><span class="badge badge-ok">Perfect</span></td><td>Full</td><td>No</td></tr>
+        <tr style="background:var(--accent-tint);"><td><b>LLM → HTML</b></td><td class="num" style="color:var(--accent-dark);">$0.001–0.045</td><td>2–5s</td><td><span class="badge badge-ok">Perfect</span></td><td>Full</td><td>No</td></tr>
+        <tr style="background:var(--accent-tint);"><td><b>LLM → p5.js / Three.js</b></td><td class="num" style="color:var(--accent-dark);">$0.001–0.003</td><td>2–5s</td><td><span class="badge badge-ok">Perfect</span></td><td>Full</td><td>Canvas/WebGL</td></tr>
+        <tr style="background:var(--accent-tint);"><td><b>LLM → Blender/UE5</b></td><td class="num" style="color:var(--accent-dark);">$0.002–0.01</td><td>5–30s</td><td><span class="badge badge-ok">Perfect</span></td><td>Full</td><td><span class="badge badge-ok">Yes</span></td></tr>
+        <tr style="background:var(--accent-tint);"><td><b>Unsplash+Overlay</b></td><td class="num" style="color:var(--accent-dark);">~$0.003</td><td>2–5s</td><td><span class="badge badge-ok">Perfect</span></td><td>Full</td><td><span class="badge badge-ok">Real</span></td></tr>
+        <tr><td>GenClaw (hybrid)</td><td class="num">$0.05–0.25</td><td>15–60s</td><td><span class="badge badge-ok">Perfect</span></td><td>Partial</td><td><span class="badge badge-ok">Yes</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:10px;padding-top:8px;border-top:1px solid var(--line);">Frontier models (GPT Image 1.5, Nano Banana 2) now render text well — likely using code-based composition internally. The differentiators for programmatic: full editability, deterministic output, version control, and 10–100× cost at scale. Prices as of March 2026.</div>
+  </div>
+</section>
+
+
+<!-- LIVE DEMO -->
+<section id="live">
+  <div class="s-head">
+    <div class="s-kicker">Interactive</div>
+    <h2 class="s-title">What the output actually looks like</h2>
+    <p class="s-desc">Drag a slider. The SVG re-renders instantly. This is the raw output of a single LLM call, unretouched.</p>
+  </div>
+
+  <div>
+    <div class="panel">
+      <div class="panel-title">Controls</div>
+      <div class="tabs">
+        <div class="tab active" data-tab="chart">Chart</div>
+        <div class="tab" data-tab="card">KPI Card</div>
+      </div>
+
+      <div class="tab-content active" id="tab-chart">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;">
+          <div class="slider-row"><label>Bars:</label><input type="range" id="dataPoints" min="3" max="12" value="7"><span class="val" id="dataPointsVal">7</span></div>
+          <div class="slider-row"><label>Max:</label><input type="range" id="maxVal" min="40" max="200" value="100"><span class="val" id="maxValVal">100</span></div>
+          <div class="slider-row"><label>Gap:</label><input type="range" id="chartGap" min="4" max="30" value="13"><span class="val" id="chartGapVal">13</span></div>
+          <div class="slider-row"><label>Data:</label><input type="range" id="chartSeed" min="1" max="20" value="8"><span class="val" id="chartSeedVal">8</span></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);">
+          <span style="font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;">Palette</span>
+          <div class="chart-palette-btn" data-accent="#2B5C8E" style="width:24px;height:24px;background:#2B5C8E;border:2px solid transparent;border-radius:4px;cursor:pointer;"></div>
+          <div class="chart-palette-btn" data-accent="#B0532B" style="width:24px;height:24px;background:#B0532B;border:2px solid transparent;border-radius:4px;cursor:pointer;"></div>
+          <div class="chart-palette-btn active" data-accent="#3C6E47" style="width:24px;height:24px;background:#3C6E47;border:2px solid var(--ink);border-radius:4px;cursor:pointer;"></div>
+          <div class="chart-palette-btn" data-accent="#6D3A6B" style="width:24px;height:24px;background:#6D3A6B;border:2px solid transparent;border-radius:4px;cursor:pointer;"></div>
+          <div class="chart-palette-btn" data-accent="#7A2E2E" style="width:24px;height:24px;background:#7A2E2E;border:2px solid transparent;border-radius:4px;cursor:pointer;"></div>
+          <label style="font-family:var(--mono);font-size:10px;color:var(--muted);display:flex;align-items:center;gap:4px;margin-left:12px;cursor:pointer;"><input type="checkbox" id="chartFrame" checked> Frame</label>
+          <button class="btn" onclick="document.getElementById('chartSeed').value=Math.floor(Math.random()*20)+1;syncSliders();updatePreview();" style="margin-left:auto;padding:8px 16px;">↻ Shuffle data</button>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-card">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;">
+          <div class="slider-row"><label>Uptime %:</label><input type="range" id="statVal" min="90" max="100" value="95" step="0.1"><span class="val" id="statValVal">95.0%</span></div>
+          <div class="slider-row"><label>Trend:</label><input type="range" id="trendVal" min="-5" max="5" value="2" step="0.1"><span class="val" id="trendValVal">+2.0%</span></div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--line);display:flex;justify-content:space-between;">
+        <span style="font-family:var(--mono);font-size:10px;color:var(--muted);">TOKEN COST:</span>
+        <span id="tokenCost" style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent-dark);">~800 tok ≈ $0.0002</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Rendered output</div>
+      <div class="svg-preview" id="svgOutput" style="min-height:300px;"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Generated SVG code</div>
+      <div class="code-block" id="codeOutput"></div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- EDITORIAL GALLERY — Real LLM-generated illustrations -->
+<section id="gallery">
+  <div class="s-head">
+    <div class="s-kicker">The ceiling, not the floor</div>
+    <h2 class="s-title">Magazine-grade illustration. Zero pixels generated.</h2>
+    <p class="s-desc">A 13-plate editorial series in one coherent visual system. Every shape, line, and glyph is SVG code produced by a single LLM call. Total series cost: $0.52.</p>
+  </div>
+
+  <div class="panel" style="padding:20px;background:var(--accent-tint);border-color:var(--line);" id="galleryPanel">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div class="panel-title" style="margin-bottom:0;color:#241C15;">Gallery — "Subtractive Craft" series (6 of 13 plates)</div>
+      <div style="font-family:var(--mono);font-size:10px;color:#8A7A66;">~35–50 KB SVG · ~$0.04/plate · Claude Sonnet</div>
+    </div>
+
+    <div id="galleryGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+      <div class="gallery-item" data-idx="0" style="cursor:pointer;border:1px solid var(--line);overflow:hidden;aspect-ratio:4/3;position:relative;background:var(--accent-tint);">
+        <object data="editorial-01-sculptor.svg" type="image/svg+xml" class="gallery-svg" style="width:100%;height:100%;pointer-events:none;"></object>
+        <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(28,24,17,0.8);padding:6px 10px;font-family:var(--mono);font-size:9px;color:#F4ECE1;letter-spacing:0.5px;">I · THE SCULPTOR</div>
+      </div>
+      <div class="gallery-item" data-idx="1" style="cursor:pointer;border:1px solid var(--line);overflow:hidden;aspect-ratio:4/3;position:relative;background:var(--accent-tint);">
+        <object data="editorial-03-fingerprint.svg" type="image/svg+xml" class="gallery-svg" style="width:100%;height:100%;pointer-events:none;"></object>
+        <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(28,24,17,0.8);padding:6px 10px;font-family:var(--mono);font-size:9px;color:#F4ECE1;letter-spacing:0.5px;">III · AI FINGERPRINTS</div>
+      </div>
+      <div class="gallery-item" data-idx="2" style="cursor:pointer;border:1px solid var(--line);overflow:hidden;aspect-ratio:4/3;position:relative;background:var(--accent-tint);">
+        <object data="editorial-04-leaking-bucket.svg" type="image/svg+xml" class="gallery-svg" style="width:100%;height:100%;pointer-events:none;"></object>
+        <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(28,24,17,0.8);padding:6px 10px;font-family:var(--mono);font-size:9px;color:#F4ECE1;letter-spacing:0.5px;">IV · THE LEAKING BUCKET</div>
+      </div>
+      <div class="gallery-item" data-idx="3" style="cursor:pointer;border:1px solid var(--line);overflow:hidden;aspect-ratio:4/3;position:relative;background:var(--accent-tint);">
+        <object data="editorial-08-cascade.svg" type="image/svg+xml" class="gallery-svg" style="width:100%;height:100%;pointer-events:none;"></object>
+        <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(28,24,17,0.8);padding:6px 10px;font-family:var(--mono);font-size:9px;color:#F4ECE1;letter-spacing:0.5px;">VIII · THE CASCADE</div>
+      </div>
+      <div class="gallery-item" data-idx="4" style="cursor:pointer;border:1px solid var(--line);overflow:hidden;aspect-ratio:4/3;position:relative;background:var(--accent-tint);">
+        <object data="editorial-09-iceberg.svg" type="image/svg+xml" class="gallery-svg" style="width:100%;height:100%;pointer-events:none;"></object>
+        <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(28,24,17,0.8);padding:6px 10px;font-family:var(--mono);font-size:9px;color:#F4ECE1;letter-spacing:0.5px;">IX · THE ICEBERG</div>
+      </div>
+      <div class="gallery-item" data-idx="5" style="cursor:pointer;border:1px solid var(--line);overflow:hidden;aspect-ratio:4/3;position:relative;background:var(--accent-tint);">
+        <object data="editorial-10-show-dont-tell.svg" type="image/svg+xml" class="gallery-svg" style="width:100%;height:100%;pointer-events:none;"></object>
+        <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(28,24,17,0.8);padding:6px 10px;font-family:var(--mono);font-size:9px;color:#F4ECE1;letter-spacing:0.5px;">X · SHOW, DON'T TELL</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightbox for full-size view -->
+  <div id="galleryLightbox" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(28,24,17,0.95);cursor:pointer;padding:24px;" onclick="this.style.display='none'">
+    <div style="position:absolute;top:16px;right:24px;font-family:var(--mono);font-size:12px;color:rgba(244,236,225,0.5);">CLICK TO CLOSE</div>
+    <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+      <img id="lightboxImg" src="" alt="" style="max-width:90%;max-height:90%;object-fit:contain;">
+    </div>
+    <div id="lightboxCaption" style="position:absolute;bottom:24px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:11px;color:rgba(244,236,225,0.7);text-align:center;"></div>
+  </div>
+
+  <div class="split" style="margin-top:20px;">
+    <div class="gallery-accent-box" style="border-left:3px solid var(--accent);padding:14px 18px;background:var(--accent-tint);font-size:13px;">
+      <b style="color:#241C15;">One design system, thirteen plates.</b> Warm paper, single blue accent, scientific framing. Registration marks, figure numbers, monospace captions. The LLM followed a style document and maintained consistency across the entire series.
+    </div>
+    <div class="gallery-accent-box" style="border-left:3px solid var(--accent);padding:14px 18px;background:var(--accent-tint);font-size:13px;">
+      <b style="color:#241C15;">$0.52 for a complete editorial set.</b> A human illustrator quotes $500–3,000 for this scope. The SVGs scale to any resolution. Every element is addressable, editable, animatable. The style transfers to new subjects in one prompt.
+    </div>
+  </div>
+</section>
+
+
+<!-- ARCHITECTURE DIAGRAMS -->
+<section id="archdiagram">
+  <div class="s-head">
+    <div class="s-kicker">Production-grade output</div>
+    <h2 class="s-title">AWS architecture diagrams. One prompt. Every icon correct.</h2>
+    <p class="s-desc">AI agents generate broken diagrams because stencil names are wrong. This skill carries 270+ verified icon mappings. Output opens clean in draw.io with zero manual fixes.</p>
+  </div>
+
+  <div class="split">
+    <div class="panel" style="padding:20px;">
+      <div class="panel-title">The problem</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">draw.io stencil names don't match AWS service names. Renamed services keep old identifiers. Without a verified catalog, agents guess and icons render as empty boxes.</p>
+      <div style="background:var(--paper);border:1px solid var(--line);padding:14px;font-family:var(--mono);font-size:10px;color:var(--ink);margin-bottom:14px;">
+        <div style="color:#dc2626;margin-bottom:6px;">✗ Without skill:</div>
+        <div style="color:var(--muted);margin-left:12px;">mxgraph.aws4.dynamodb_table → <span style="color:#dc2626;">empty box</span></div>
+        <div style="color:var(--muted);margin-left:12px;">mxgraph.aws4.open_search → <span style="color:#dc2626;">empty box</span></div>
+        <div style="margin-top:10px;color:var(--accent);margin-bottom:6px;">✓ With skill:</div>
+        <div style="color:var(--muted);margin-left:12px;">mxgraph.aws4.dynamodb → <span style="color:var(--accent);">renders correctly</span></div>
+        <div style="color:var(--muted);margin-left:12px;">mxgraph.aws4.elasticsearch_service → <span style="color:var(--accent);">renders correctly</span></div>
+      </div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:12px;">INSTALL:</div>
+      <div class="code-block" style="font-size:11px;padding:12px;max-height:none;">npx skills add vidanov/aws-architecture-diagram-skill</div>
+      <a href="https://github.com/vidanov/aws-architecture-diagram-skill" target="_blank" class="btn-green" style="margin-top:14px;display:inline-block;">GitHub → 270+ verified icons</a>
+    </div>
+
+    <div class="panel" style="padding:20px;">
+      <div class="panel-title">Example: Event-driven order processing</div>
+      <div style="background:white;border:1px solid var(--line);padding:8px;margin-bottom:14px;">
+        <img src="https://raw.githubusercontent.com/vidanov/aws-architecture-diagram-skill/main/docs/example-event-driven.png" alt="Event-driven architecture diagram" style="width:100%;display:block;" onerror="this.parentElement.innerHTML='<div style=&quot;padding:40px;text-align:center;font-family:var(--mono);font-size:10px;color:var(--muted);&quot;>Image loads from GitHub</div>';">
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">
+        <b style="color:var(--ink);">Prompt used:</b> "Create an event-driven order processing architecture with SQS, Lambda, DynamoDB, and EventBridge"
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div style="background:var(--accent-tint);padding:10px;text-align:center;">
+          <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--accent-dark);">270+</div>
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;">Verified icons</div>
+        </div>
+        <div style="background:var(--accent-tint);padding:10px;text-align:center;">
+          <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--accent-dark);">.drawio</div>
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;">Native editable</div>
+        </div>
+        <div style="background:var(--accent-tint);padding:10px;text-align:center;">
+          <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--accent-dark);">0</div>
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;">Runtime deps</div>
+        </div>
+        <div style="background:var(--accent-tint);padding:10px;text-align:center;">
+          <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--accent-dark);">MIT</div>
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;">License</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <b>No MCP server. No Python. No binary.</b> A markdown file the agent reads. It enforces left-to-right flow, 78px icons, correct strokeColor rules, and minimum spacing. Works with ChatGPT, Claude, Kiro, Cursor, or any agent that accepts custom instructions.
+  </div>
+</section>
+
+<!-- HYBRID — PHOTO + OVERLAY with variations -->
+<section id="hybrid">
+  <div class="s-head">
+    <div class="s-kicker">Best of both</div>
+    <h2 class="s-title">Real photography. Programmatic precision.</h2>
+    <p class="s-desc">Unsplash gives you the photograph for free. The LLM writes the overlay where text, data, and layout must be exact. Cost per image: ~$0.003.</p>
+  </div>
+
+  <div class="variation-tabs" id="variationTabs">
+    <div class="variation-tab active" data-var="city">Cityscape / Scale</div>
+    <div class="variation-tab" data-var="abstract">Abstract / Minimal</div>
+    <div class="variation-tab" data-var="workspace">Workspace / Team</div>
+    <div class="variation-tab" data-var="tech">Tech / Data center</div>
+    <div class="variation-tab" data-var="nature">Nature / Growth</div>
+  </div>
+
+  <!-- Variation: Tech -->
+  <div class="variation-content" id="var-tech">
+    <div class="panel" style="padding:0;overflow:hidden;">
+      <div style="position:relative;min-height:340px;">
+        <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1060&h=400&fit=crop&q=80" 
+             alt="Data center" 
+             style="width:100%;height:340px;object-fit:cover;display:block;"
+             onerror="this.style.display='none';this.nextElementSibling.style.opacity='1';">
+        <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(10,61,30,0.75),rgba(20,83,45,0.65));opacity:1;"></div>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:40px 36px;z-index:2;">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--accent-light);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">Photo: Unsplash (free) + LLM overlay (~$0.003 total)</div>
+          <h3 style="font-size:30px;font-weight:700;color:#fff;margin-bottom:8px;">Cloud Migration Playbook</h3>
+          <p style="font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:28px;">5 phases · 12 weeks · 3 workstreams</p>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:500px;">
+            <div style="background:rgba(255,255,255,0.12);backdrop-filter:blur(8px);padding:18px;border:1px solid rgba(255,255,255,0.15);text-align:center;border-radius:4px;">
+              <div style="font-family:var(--mono);font-size:24px;font-weight:700;color:var(--accent-light);">47%</div>
+              <div style="font-size:10px;color:rgba(255,255,255,0.6);margin-top:4px;text-transform:uppercase;">Cost reduction</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.12);backdrop-filter:blur(8px);padding:18px;border:1px solid rgba(255,255,255,0.15);text-align:center;border-radius:4px;">
+              <div style="font-family:var(--mono);font-size:24px;font-weight:700;color:var(--accent-light);">99.95%</div>
+              <div style="font-size:10px;color:rgba(255,255,255,0.6);margin-top:4px;text-transform:uppercase;">Target SLA</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.12);backdrop-filter:blur(8px);padding:18px;border:1px solid rgba(255,255,255,0.15);text-align:center;border-radius:4px;">
+              <div style="font-family:var(--mono);font-size:24px;font-weight:700;color:var(--accent-light);">3×</div>
+              <div style="font-size:10px;color:rgba(255,255,255,0.6);margin-top:4px;text-transform:uppercase;">Deploy freq</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Variation: Nature -->
+  <div class="variation-content" id="var-nature">
+    <div class="panel" style="padding:0;overflow:hidden;">
+      <div style="position:relative;min-height:340px;">
+        <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1060&h=400&fit=crop&q=80" 
+             alt="Forest canopy" 
+             style="width:100%;height:340px;object-fit:cover;display:block;"
+             onerror="this.style.display='none';">
+        <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(5,46,22,0.7),rgba(20,83,45,0.55));"></div>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:40px 36px;z-index:2;">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--accent-light);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">Organic growth theme · Unsplash + LLM</div>
+          <h3 style="font-size:30px;font-weight:700;color:#fff;margin-bottom:8px;">Sustainable Architecture</h3>
+          <p style="font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:28px;">Carbon-aware · Auto-scaling · Right-sized</p>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:560px;">
+            <div style="background:rgba(255,255,255,0.1);backdrop-filter:blur(8px);padding:14px 10px;border:1px solid rgba(255,255,255,0.12);text-align:center;border-radius:4px;">
+              <div style="font-family:var(--mono);font-size:20px;font-weight:700;color:#4ade80;">62%</div>
+              <div style="font-size:9px;color:rgba(255,255,255,0.5);margin-top:3px;">Carbon ↓</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.1);backdrop-filter:blur(8px);padding:14px 10px;border:1px solid rgba(255,255,255,0.12);text-align:center;border-radius:4px;">
+              <div style="font-family:var(--mono);font-size:20px;font-weight:700;color:#4ade80;">18ms</div>
+              <div style="font-size:9px;color:rgba(255,255,255,0.5);margin-top:3px;">P99 latency</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.1);backdrop-filter:blur(8px);padding:14px 10px;border:1px solid rgba(255,255,255,0.12);text-align:center;border-radius:4px;">
+              <div style="font-family:var(--mono);font-size:20px;font-weight:700;color:#4ade80;">5</div>
+              <div style="font-size:9px;color:rgba(255,255,255,0.5);margin-top:3px;">Regions</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.1);backdrop-filter:blur(8px);padding:14px 10px;border:1px solid rgba(255,255,255,0.12);text-align:center;border-radius:4px;">
+              <div style="font-family:var(--mono);font-size:20px;font-weight:700;color:#4ade80;">0</div>
+              <div style="font-size:9px;color:rgba(255,255,255,0.5);margin-top:3px;">Downtime</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Variation: Cityscape -->
+  <div class="variation-content active" id="var-city">
+    <div class="panel" style="padding:0;overflow:hidden;">
+      <div style="position:relative;min-height:340px;">
+        <img src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1060&h=400&fit=crop&q=80" 
+             alt="City skyline" 
+             style="width:100%;height:340px;object-fit:cover;display:block;"
+             onerror="this.style.display='none';">
+        <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(15,23,42,0.8),rgba(30,58,138,0.6));"></div>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:40px 36px;z-index:2;">
+          <div style="font-family:var(--mono);font-size:9px;color:#93c5fd;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">Enterprise scale theme · Unsplash + LLM</div>
+          <h3 style="font-size:30px;font-weight:700;color:#fff;margin-bottom:8px;">Platform Engineering at Scale</h3>
+          <p style="font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:28px;">12 teams · 340 microservices · 1 platform</p>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:500px;">
+            <div style="background:rgba(255,255,255,0.08);backdrop-filter:blur(8px);padding:18px;border:1px solid rgba(147,197,253,0.2);text-align:center;border-radius:4px;">
+              <div style="font-family:var(--mono);font-size:24px;font-weight:700;color:#93c5fd;">340</div>
+              <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:4px;text-transform:uppercase;">Services</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.08);backdrop-filter:blur(8px);padding:18px;border:1px solid rgba(147,197,253,0.2);text-align:center;border-radius:4px;">
+              <div style="font-family:var(--mono);font-size:24px;font-weight:700;color:#93c5fd;">2.4M</div>
+              <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:4px;text-transform:uppercase;">Req/sec</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.08);backdrop-filter:blur(8px);padding:18px;border:1px solid rgba(147,197,253,0.2);text-align:center;border-radius:4px;">
+              <div style="font-family:var(--mono);font-size:24px;font-weight:700;color:#93c5fd;">4.2s</div>
+              <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:4px;text-transform:uppercase;">Avg deploy</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Variation: Abstract -->
+  <div class="variation-content" id="var-abstract">
+    <div class="panel" style="padding:0;overflow:hidden;">
+      <div style="position:relative;min-height:340px;">
+        <img src="https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=1060&h=400&fit=crop&q=80" 
+             alt="Abstract paint" 
+             style="width:100%;height:340px;object-fit:cover;display:block;"
+             onerror="this.style.display='none';">
+        <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(88,28,135,0.75),rgba(15,23,42,0.7));"></div>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:40px 36px;z-index:2;text-align:center;">
+          <div style="font-family:var(--mono);font-size:9px;color:#c4b5fd;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">Minimal / Abstract theme · Unsplash + LLM</div>
+          <h3 style="font-size:34px;font-weight:700;color:#fff;margin-bottom:6px;">Think Different.</h3>
+          <h3 style="font-size:34px;font-weight:700;color:#c4b5fd;margin-bottom:16px;">Build Programmatic.</h3>
+          <p style="font-size:14px;color:rgba(255,255,255,0.6);max-width:400px;">When your image is code, every pixel has intent. No hallucination. No guessing. Pure signal.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Variation: Workspace -->
+  <div class="variation-content" id="var-workspace">
+    <div class="panel" style="padding:0;overflow:hidden;">
+      <div style="position:relative;min-height:340px;">
+        <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1060&h=400&fit=crop&q=80" 
+             alt="Team collaboration" 
+             style="width:100%;height:340px;object-fit:cover;display:block;"
+             onerror="this.style.display='none';">
+        <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(20,83,45,0.8),rgba(5,46,22,0.65));"></div>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:40px 36px;z-index:2;">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--accent-light);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">Team / Collaboration theme · Unsplash + LLM</div>
+          <h3 style="font-size:28px;font-weight:700;color:#fff;margin-bottom:8px;">Sprint Velocity Dashboard</h3>
+          <p style="font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:24px;">Real-time metrics for engineering leadership</p>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-width:400px;">
+            <div style="background:rgba(255,255,255,0.1);backdrop-filter:blur(8px);padding:14px;border:1px solid rgba(255,255,255,0.12);border-radius:4px;">
+              <div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;margin-bottom:4px;">Velocity</div>
+              <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:#4ade80;">+23%</div>
+              <div style="font-size:9px;color:rgba(255,255,255,0.4);margin-top:2px;">vs last sprint</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.1);backdrop-filter:blur(8px);padding:14px;border:1px solid rgba(255,255,255,0.12);border-radius:4px;">
+              <div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;margin-bottom:4px;">Cycle time</div>
+              <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:#4ade80;">1.8d</div>
+              <div style="font-size:9px;color:rgba(255,255,255,0.4);margin-top:2px;">from 3.2d</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.1);backdrop-filter:blur(8px);padding:14px;border:1px solid rgba(255,255,255,0.12);border-radius:4px;">
+              <div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;margin-bottom:4px;">Escaped bugs</div>
+              <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:#fbbf24;">2</div>
+              <div style="font-size:9px;color:rgba(255,255,255,0.4);margin-top:2px;">target: 0</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.1);backdrop-filter:blur(8px);padding:14px;border:1px solid rgba(255,255,255,0.12);border-radius:4px;">
+              <div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;margin-bottom:4px;">Team mood</div>
+              <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:#4ade80;">8.2</div>
+              <div style="font-size:9px;color:rgba(255,255,255,0.4);margin-top:2px;">/10 avg</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <b>The split:</b> Photographs carry emotion and context. Code carries precision. Combine them and you get blog heroes, social cards, and presentation slides that look commissioned but cost three-tenths of a cent.
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Free photo APIs</div>
+    <table class="ctable">
+      <thead><tr><th>Service</th><th>Library</th><th>Rate limit</th><th>License</th></tr></thead>
+      <tbody>
+        <tr><td><b>Unsplash</b></td><td>3M+ photos</td><td>50/hr → 5K approved</td><td>Free commercial</td></tr>
+        <tr><td><b>Pexels</b></td><td>3M+ photo+video</td><td>200/hr</td><td>Free commercial</td></tr>
+        <tr><td><b>Pixabay</b></td><td>4M+ images</td><td>100/min</td><td>CC0-like</td></tr>
+        <tr><td><b>Lorem Picsum</b></td><td>~1K curated</td><td>Unlimited</td><td>Unsplash License</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- BEYOND STATIC — Presentations & Video -->
+<section id="beyond">
+  <div class="s-head">
+    <div class="s-kicker">The same principle, further</div>
+    <h2 class="s-title">Presentations and video. Still just code.</h2>
+    <p class="s-desc">If an LLM can write SVG, it can write slides. If it can write React components, it can render video. The programmatic approach extends beyond static images.</p>
+  </div>
+
+  <div class="split">
+    <div class="panel" style="padding:24px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div style="width:36px;height:36px;background:var(--accent-dark);display:flex;align-items:center;justify-content:center;border-radius:4px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#bbf7d0" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        <div>
+          <div style="font-weight:700;font-size:14px;">Reveal.js</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted);">revealjs.com</div>
+        </div>
+      </div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">The LLM generates a single self-contained HTML file. Speaker notes, transitions, auto-animate, code highlighting, LaTeX. Opens in any browser. No PowerPoint, no Keynote, no SaaS subscription.</p>
+      <div style="background:var(--paper);border:1px solid var(--line);padding:12px;font-family:var(--mono);font-size:10px;margin-bottom:12px;">
+        <div style="color:var(--accent);margin-bottom:4px;">Prompt:</div>
+        <div style="color:var(--ink);">"Create a 12-slide deck on serverless cost optimization with code examples and speaker notes"</div>
+        <div style="margin-top:8px;color:var(--muted);">→ 1 HTML file, ~15KB, works offline</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <span class="badge badge-ok">Self-contained HTML</span>
+        <span class="badge badge-ok">Auto-animate</span>
+        <span class="badge badge-ok">PDF export</span>
+        <span class="badge badge-ok">Speaker notes</span>
+      </div>
+      <a href="https://revealjs.com" target="_blank" class="btn" style="margin-top:14px;">revealjs.com →</a>
+    </div>
+
+    <div class="panel" style="padding:24px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div style="width:36px;height:36px;background:#1a1a2e;display:flex;align-items:center;justify-content:center;border-radius:4px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </div>
+        <div>
+          <div style="font-weight:700;font-size:14px;">Remotion</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted);">remotion.dev</div>
+        </div>
+      </div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">React components rendered frame-by-frame to MP4. The LLM writes JSX with motion logic. Programmatic video: animated explainers, data visualizations, social clips. Each frame is deterministic.</p>
+      <div style="background:var(--paper);border:1px solid var(--line);padding:12px;font-family:var(--mono);font-size:10px;margin-bottom:12px;">
+        <div style="color:#818cf8;margin-bottom:4px;">Concept:</div>
+        <div style="color:var(--ink);">React component → 30fps frames → ffmpeg → MP4</div>
+        <div style="margin-top:8px;color:var(--muted);">→ LLM writes the component, Remotion renders the video</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <span class="badge badge-ok">Programmatic video</span>
+        <span class="badge badge-ok">React + TypeScript</span>
+        <span class="badge badge-ok">Deterministic</span>
+        <span class="badge badge-ok">Server-side render</span>
+      </div>
+      <a href="https://www.remotion.dev" target="_blank" class="btn" style="margin-top:14px;">remotion.dev →</a>
+    </div>
+  </div>
+
+  <div class="insight">
+    <b>The pattern is consistent:</b> any visual output that can be described as code can be generated by an LLM. Slides (HTML), video (React/JSX), diagrams (draw.io XML), illustrations (SVG), charts (Python/JS). The rendering engine already exists. The LLM just needs to know its API.
+  </div>
+</section>
+
+
+<!-- GAME ENGINES & CREATIVE TOOLS -->
+<section id="engines">
+  <div class="s-head">
+    <div class="s-kicker">The renderer spectrum</div>
+    <h2 class="s-title">From SVG to Unreal Engine. Same pattern. More power.</h2>
+    <p class="s-desc">Every rendering engine that accepts code as input is an LLM target. The browser is just the beginning. Game engines, creative coding frameworks, and 3D tools all follow the same economics: tokens in, visuals out.</p>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">The renderer spectrum — capability vs. cost per image</div>
+    <div style="overflow-x:auto;">
+    <table class="ctable">
+      <thead><tr><th>Renderer</th><th>Capability</th><th>Typical tokens</th><th>Cost/image</th><th>LLM writes</th><th>Runs on</th></tr></thead>
+      <tbody>
+        <tr style="background:var(--accent-tint);"><td><b>SVG (browser)</b></td><td>2D vector</td><td class="num">~800</td><td class="num" style="color:var(--accent-dark);">$0.0003</td><td>SVG markup</td><td>Any browser</td></tr>
+        <tr style="background:var(--accent-tint);"><td><b>Canvas 2D (browser)</b></td><td>Pixel art, particles, simulations</td><td class="num">~2,400</td><td class="num" style="color:var(--accent-dark);">$0.001</td><td>JavaScript</td><td>Any browser</td></tr>
+        <tr style="background:var(--accent-tint);"><td><b>p5.js (browser)</b></td><td>2D creative/generative</td><td class="num">~1,500</td><td class="num" style="color:var(--accent-dark);">$0.0006</td><td>JavaScript sketch</td><td>Any browser</td></tr>
+        <tr style="background:var(--accent-tint);"><td><b>Three.js (browser)</b></td><td>3D scenes, PBR</td><td class="num">~3,000</td><td class="num" style="color:var(--accent-dark);">$0.001</td><td>JavaScript scene</td><td>Any browser (WebGL)</td></tr>
+        <tr style="background:var(--accent-tint);"><td><b>Manim (Python)</b></td><td>Math animations</td><td class="num">~2,000</td><td class="num" style="color:var(--accent-dark);">$0.001</td><td>Python scene class</td><td>CLI + ffmpeg</td></tr>
+        <tr style="background:var(--accent-tint);"><td><b>Godot (.tscn)</b></td><td>2D/3D game scenes</td><td class="num">~2,500</td><td class="num" style="color:var(--accent-dark);">$0.001</td><td>Scene text file</td><td>Godot (free, OSS)</td></tr>
+        <tr style="background:var(--accent-tint);"><td><b>Blender (Python)</b></td><td>Photorealistic 3D</td><td class="num">~5,000</td><td class="num" style="color:var(--accent-dark);">$0.002</td><td>bpy Python script</td><td>Headless CLI</td></tr>
+        <tr style="background:var(--accent-tint);"><td><b>Unreal Engine (Python)</b></td><td>AAA-grade real-time</td><td class="num">~8,000</td><td class="num" style="color:var(--accent-dark);">$0.003</td><td>Python + Blueprints</td><td>UE Editor / headless</td></tr>
+        <tr><td>GPT Image 1.5 / Nano Banana 2</td><td>Photorealistic</td><td class="num">N/A</td><td class="num" style="color:#b45309;">$0.02–0.20</td><td>—</td><td>API</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="insight"><b>Even the most capable option (Unreal Engine at ~$0.003) is 7–70× cheaper than diffusion.</b> And every output is editable, deterministic, version-controllable source code.</div>
+  </div>
+
+  <div class="split" style="grid-template-columns: 1fr 1fr; gap: 20px;">
+    <!-- p5.js -->
+    <div class="panel" style="padding:24px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div style="width:36px;height:36px;background:#ed225d;display:flex;align-items:center;justify-content:center;border-radius:4px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><text x="4" y="18" font-family="monospace" font-size="14" font-weight="bold" fill="#fff">p5</text></svg>
+        </div>
+        <div>
+          <div style="font-weight:700;font-size:14px;">p5.js</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted);">Creative coding in the browser</div>
+        </div>
+      </div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Processing-based creative coding. Particles, physics, shaders, generative art. Sketches are typically 20–80 lines. Renders on canvas — same "browser renders for free" principle as SVG.</p>
+      <div style="background:var(--paper);border:1px solid var(--line);padding:12px;font-family:var(--mono);font-size:10px;margin-bottom:12px;">
+        <div style="color:var(--accent);margin-bottom:4px;">LLM writes:</div>
+        <div style="color:var(--muted);">function setup() { createCanvas(800, 600); }</div>
+        <div style="color:var(--muted);">function draw() { /* particles, noise, etc */ }</div>
+        <div style="margin-top:8px;color:var(--ink);">→ Generative art, data viz, interactive simulations</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <span class="badge badge-ok">~1,500 tokens</span>
+        <span class="badge badge-ok">Browser-native</span>
+        <span class="badge badge-ok">Interactive</span>
+        <span class="badge badge-ok">GPU via WebGL</span>
+      </div>
+    </div>
+
+    <!-- Three.js -->
+    <div class="panel" style="padding:24px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div style="width:36px;height:36px;background:#000;display:flex;align-items:center;justify-content:center;border-radius:4px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><polygon points="12,2 22,18 2,18" fill="none" stroke="#fff" stroke-width="2"/></svg>
+        </div>
+        <div>
+          <div style="font-weight:700;font-size:14px;">Three.js / Babylon.js</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted);">3D in the browser via WebGL/WebGPU</div>
+        </div>
+      </div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Full 3D scenes with PBR materials, shadows, post-processing. LLMs write Three.js fluently. Product shots, architectural visualizations, interactive 3D — all in the browser with zero infrastructure.</p>
+      <div style="background:var(--paper);border:1px solid var(--line);padding:12px;font-family:var(--mono);font-size:10px;margin-bottom:12px;">
+        <div style="color:var(--accent);margin-bottom:4px;">LLM writes:</div>
+        <div style="color:var(--muted);">const scene = new THREE.Scene();</div>
+        <div style="color:var(--muted);">scene.add(mesh, light, camera);</div>
+        <div style="margin-top:8px;color:var(--ink);">→ Product shots, arch viz, 3D data viz</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <span class="badge badge-ok">~3,000 tokens</span>
+        <span class="badge badge-ok">PBR materials</span>
+        <span class="badge badge-ok">WebGPU ready</span>
+        <span class="badge badge-ok">No install</span>
+      </div>
+    </div>
+
+    <!-- Blender -->
+    <div class="panel" style="padding:24px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div style="width:36px;height:36px;background:#ea7600;display:flex;align-items:center;justify-content:center;border-radius:4px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" fill="none" stroke="#fff" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="#fff"/></svg>
+        </div>
+        <div>
+          <div style="font-weight:700;font-size:14px;">Blender (headless)</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted);">Photorealistic 3D via Python scripting</div>
+        </div>
+      </div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Hollywood-grade rendering from a Python script. Cycles path tracer, Eevee real-time. Runs headless: <code style="font-size:10px;">blender -b -P script.py</code>. The LLM constructs scenes, sets materials, triggers renders.</p>
+      <div style="background:var(--paper);border:1px solid var(--line);padding:12px;font-family:var(--mono);font-size:10px;margin-bottom:12px;">
+        <div style="color:#ea7600;margin-bottom:4px;">LLM writes:</div>
+        <div style="color:var(--muted);">import bpy</div>
+        <div style="color:var(--muted);">bpy.ops.mesh.primitive_cube_add()</div>
+        <div style="color:var(--muted);">bpy.ops.render.render(write_still=True)</div>
+        <div style="margin-top:8px;color:var(--ink);">→ Product viz, arch renders, scene composition</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <span class="badge badge-ok">~5,000 tokens</span>
+        <span class="badge badge-ok">Path tracing</span>
+        <span class="badge badge-ok">Free & OSS</span>
+        <span class="badge badge-ok">Headless CLI</span>
+      </div>
+    </div>
+
+    <!-- Godot -->
+    <div class="panel" style="padding:24px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div style="width:36px;height:36px;background:#478cbf;display:flex;align-items:center;justify-content:center;border-radius:4px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="10" r="2" fill="#fff"/><circle cx="15" cy="10" r="2" fill="#fff"/><path d="M9 15 Q12 18 15 15" fill="none" stroke="#fff" stroke-width="1.5"/></svg>
+        </div>
+        <div>
+          <div style="font-weight:700;font-size:14px;">Godot Engine</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted);">Scene files are human-readable text</div>
+        </div>
+      </div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Fully open-source game engine. Scene files (<code style="font-size:10px;">.tscn</code>) are plain text — an LLM can write them directly. GDScript is Python-like. 2D renderer is excellent, 3D is capable.</p>
+      <div style="background:var(--paper);border:1px solid var(--line);padding:12px;font-family:var(--mono);font-size:10px;margin-bottom:12px;">
+        <div style="color:#478cbf;margin-bottom:4px;">LLM writes:</div>
+        <div style="color:var(--muted);">[gd_scene format=3]</div>
+        <div style="color:var(--muted);">[node name="Player" type="Sprite2D"]</div>
+        <div style="color:var(--muted);">position = Vector2(400, 300)</div>
+        <div style="margin-top:8px;color:var(--ink);">→ Game UIs, level design, 2D/3D scenes</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <span class="badge badge-ok">~2,500 tokens</span>
+        <span class="badge badge-ok">Text-based scenes</span>
+        <span class="badge badge-ok">MIT license</span>
+        <span class="badge badge-ok">2D + 3D</span>
+      </div>
+    </div>
+
+    <!-- Unreal Engine -->
+    <div class="panel" style="padding:24px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div style="width:36px;height:36px;background:#0d1117;display:flex;align-items:center;justify-content:center;border-radius:4px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7v10l10 5 10-5V7L12 2z" fill="none" stroke="#fff" stroke-width="1.5"/><path d="M12 7v10M7 9.5l10 5" fill="none" stroke="#fff" stroke-width="1.5"/></svg>
+        </div>
+        <div>
+          <div style="font-weight:700;font-size:14px;">Unreal Engine 5</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted);">AAA-grade rendering via Python API</div>
+        </div>
+      </div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Lumen GI, Nanite geometry, path tracing. Full Python scripting API. The LLM writes 50 lines placing actors, setting materials, positioning cameras. Renders a frame that rivals film VFX.</p>
+      <div style="background:var(--paper);border:1px solid var(--line);padding:12px;font-family:var(--mono);font-size:10px;margin-bottom:12px;">
+        <div style="color:#6366f1;margin-bottom:4px;">LLM writes:</div>
+        <div style="color:var(--muted);">import unreal</div>
+        <div style="color:var(--muted);">actor = unreal.EditorLevelLibrary</div>
+        <div style="color:var(--muted);">&nbsp;&nbsp;.spawn_actor_from_class(...)</div>
+        <div style="margin-top:8px;color:var(--ink);">→ Film-quality scenes, virtual production</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <span class="badge badge-ok">~8,000 tokens</span>
+        <span class="badge badge-ok">Lumen + Nanite</span>
+        <span class="badge badge-ok">Python API</span>
+        <span class="badge badge-warn">Requires UE install</span>
+      </div>
+    </div>
+
+    <!-- Manim -->
+    <div class="panel" style="padding:24px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div style="width:36px;height:36px;background:#3b5bdb;display:flex;align-items:center;justify-content:center;border-radius:4px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 19L8 5L13 19M5 14h6" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="19" cy="8" r="3" fill="none" stroke="#fff" stroke-width="2"/></svg>
+        </div>
+        <div>
+          <div style="font-weight:700;font-size:14px;">Manim</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted);">3Blue1Brown's math animation engine</div>
+        </div>
+      </div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Publication-quality mathematical animations and explainers. The LLM writes a Python scene class, Manim renders frames to video. Used by educational creators worldwide.</p>
+      <div style="background:var(--paper);border:1px solid var(--line);padding:12px;font-family:var(--mono);font-size:10px;margin-bottom:12px;">
+        <div style="color:#3b5bdb;margin-bottom:4px;">LLM writes:</div>
+        <div style="color:var(--muted);">class MyScene(Scene):</div>
+        <div style="color:var(--muted);">&nbsp;&nbsp;def construct(self):</div>
+        <div style="color:var(--muted);">&nbsp;&nbsp;&nbsp;&nbsp;self.play(Create(circle))</div>
+        <div style="margin-top:8px;color:var(--ink);">→ Math explainers, animated proofs, data stories</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <span class="badge badge-ok">~2,000 tokens</span>
+        <span class="badge badge-ok">Video output</span>
+        <span class="badge badge-ok">LaTeX support</span>
+        <span class="badge badge-ok">MIT license</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <b>The pattern holds at every tier:</b> the LLM pays tokens to write code. The renderer (browser, Blender, Unreal, Godot) does the heavy lifting for free. As you move up the capability stack, token count grows linearly (~10×) while rendering power grows exponentially. A $0.003 Unreal render competes with outputs that cost $0.20+ from diffusion services.
+  </div>
+
+  <!-- Live p5.js-style demo (pure canvas, no library needed) -->
+  <div class="panel">
+    <div class="panel-title">Live demo — generative art via canvas (same principle as p5.js)</div>
+    <div class="split">
+      <div>
+        <div style="background:#0d1117;border:1px solid var(--line);border-radius:4px;overflow:hidden;">
+          <canvas id="genCanvas" width="480" height="320" style="width:100%;display:block;"></canvas>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px;align-items:center;">
+          <button class="btn" onclick="genArtSeed++;renderGenArt();" style="padding:6px 14px;">↻ Regenerate</button>
+          <span style="font-family:var(--mono);font-size:10px;color:var(--muted);">Seed: <span id="genSeedVal">1</span> · ~40 lines of code · ~1,200 tokens</span>
+        </div>
+      </div>
+      <div>
+        <div class="code-block" style="font-size:10px;max-height:320px;">// LLM-generated generative art
+// ~40 lines · renders on &lt;canvas&gt;
+function draw(ctx, W, H, seed) {
+  // Seeded random for determinism
+  let s = seed;
+  const rand = () => {
+    s = (s * 1664525 + 1013904223) & 0xFFFFFFFF;
+    return (s >>> 0) / 0xFFFFFFFF;
+  };
+  // Background
+  ctx.fillStyle = '#0a0f0d';
+  ctx.fillRect(0, 0, W, H);
+  // Particle field
+  for (let i = 0; i &lt; 200; i++) {
+    const x = rand() * W;
+    const y = rand() * H;
+    const r = 1 + rand() * 3;
+    const hue = 140 + rand() * 40;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = `hsla(${hue},70%,60%,${0.3+rand()*0.5})`;
+    ctx.fill();
+  }
+  // Flow lines
+  for (let i = 0; i &lt; 12; i++) {
+    ctx.beginPath();
+    let x = rand() * W, y = rand() * H;
+    ctx.moveTo(x, y);
+    for (let j = 0; j &lt; 20; j++) {
+      x += Math.cos(y*0.01+seed)*8;
+      y += Math.sin(x*0.01)*8;
+      ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = `hsla(155,80%,50%,0.3)`;
+    ctx.lineWidth = 1 + rand() * 2;
+    ctx.stroke();
+  }
+}</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--accent-dark);margin-top:8px;">Cost: ~$0.0005 · Deterministic · Infinite variants from seed</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Showcase: More impressive programmatic visuals -->
+  <div class="panel" style="padding:20px;background:var(--accent-tint);border-color:var(--line);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div class="panel-title" style="margin-bottom:0;color:#241C15;">Beyond charts: animated SVG scenes generated by LLM</div>
+      <div style="font-family:var(--mono);font-size:10px;color:#8A7A66;">Pure SVG · No JS runtime · $0.001 each</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div style="border:1px solid var(--line);overflow:hidden;position:relative;background:#0a0f0d;border-radius:4px;">
+        <object data="generative-flow-field.svg" type="image/svg+xml" style="width:100%;height:auto;display:block;pointer-events:none;"></object>
+        <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(10,15,13,0.85);padding:6px 10px;font-family:var(--mono);font-size:9px;color:#4ade80;letter-spacing:0.5px;">FLOW FIELD · ~1,800 tokens · Animated particles</div>
+      </div>
+      <div style="border:1px solid var(--line);overflow:hidden;position:relative;background:#1a1a2e;border-radius:4px;">
+        <object data="manim-sine-wave.svg" type="image/svg+xml" style="width:100%;height:auto;display:block;pointer-events:none;"></object>
+        <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(26,26,46,0.85);padding:6px 10px;font-family:var(--mono);font-size:9px;color:#a5b4fc;letter-spacing:0.5px;">MANIM-STYLE MATH · ~2,000 tokens · Animated tracer</div>
+      </div>
+      <div style="border:1px solid var(--line);overflow:hidden;position:relative;background:#0a0f1a;border-radius:4px;grid-column:span 2;">
+        <object data="isometric-data-center.svg" type="image/svg+xml" style="width:100%;height:auto;display:block;pointer-events:none;"></object>
+        <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(10,15,26,0.85);padding:6px 10px;font-family:var(--mono);font-size:9px;color:#4ade80;letter-spacing:0.5px;">ISOMETRIC DATA CENTER · ~2,400 tokens · Animated data flows + LEDs</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px;">
+      <div style="border:1px solid var(--line);overflow:hidden;position:relative;background:#060a0f;border-radius:4px;">
+        <object data="neural-network-viz.svg" type="image/svg+xml" style="width:100%;height:auto;display:block;pointer-events:none;"></object>
+        <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(6,10,15,0.85);padding:6px 10px;font-family:var(--mono);font-size:9px;color:#4ade80;letter-spacing:0.5px;">NEURAL NETWORK · ~2,800 tokens · 16 neurons · Animated signal propagation</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:16px;margin-top:12px;align-items:center;flex-wrap:wrap;">
+      <a href="threejs-crystal-garden.html" target="_blank" class="btn-green" style="padding:8px 16px;">Open 3D Crystal Garden (Three.js) →</a>
+      <a href="particle-universe.html" target="_blank" class="btn-green" style="padding:8px 16px;">Open Particle Universe (Canvas) →</a>
+      <span style="font-family:var(--mono);font-size:10px;color:var(--muted);">Interactive demos · Drag/click/scroll · No libraries</span>
+    </div>
+  </div>
+
+  <!-- More visual showcases: landscape + circuit hero -->
+  <div class="panel" style="padding:20px;">
+    <div class="panel-title">Blog heroes & social cards — single LLM call, animated</div>
+    <div style="display:grid;grid-template-columns:1fr;gap:12px;">
+      <div style="border:1px solid var(--line);overflow:hidden;position:relative;background:#020617;border-radius:4px;">
+        <object data="circuit-board-hero.svg" type="image/svg+xml" style="width:100%;height:auto;display:block;pointer-events:none;"></object>
+        <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(2,6,23,0.85);padding:6px 10px;font-family:var(--mono);font-size:9px;color:#4ade80;letter-spacing:0.5px;">CIRCUIT BOARD · Blog hero (2:1) · Animated signals · ~2,200 tokens</div>
+      </div>
+      <div style="border:1px solid var(--line);overflow:hidden;position:relative;background:#0c0a1a;border-radius:4px;">
+        <object data="procedural-landscape.svg" type="image/svg+xml" style="width:100%;height:auto;display:block;pointer-events:none;"></object>
+        <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(12,10,26,0.85);padding:6px 10px;font-family:var(--mono);font-size:9px;color:#a78bfa;letter-spacing:0.5px;">PROCEDURAL LANDSCAPE · 3 layers · Fireflies + shooting star · ~1,600 tokens</div>
+      </div>
+    </div>
+    <div class="insight" style="margin-top:16px;"><b>Every visual on this page was generated by code.</b> The landscape has parallax depth, the circuit has animated signal propagation, the neural network has signal pulses. All pure SVG. All render at any resolution. Total cost for all 7 visuals in this section: ~$0.007.</div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Why game engines matter for this thesis</div>
+    <div class="split" style="grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+      <div style="padding:16px;background:var(--accent-tint);border:1px solid var(--line);">
+        <div style="font-weight:700;font-size:13px;margin-bottom:8px;color:var(--accent-dark);">Scene files are text</div>
+        <p style="font-size:12px;color:var(--muted);">Godot <code>.tscn</code>, Unreal Blueprints (JSON), Unity YAML scenes — all human-readable, all LLM-writable. The "code as canvas" principle applies directly to game content.</p>
+      </div>
+      <div style="padding:16px;background:var(--accent-tint);border:1px solid var(--line);">
+        <div style="font-weight:700;font-size:13px;margin-bottom:8px;color:var(--accent-dark);">Headless rendering exists</div>
+        <p style="font-size:12px;color:var(--muted);">Blender, Godot, and UE5 all support headless/CLI rendering. No GUI needed. Perfect for CI pipelines: <code>prompt → LLM → code → render → PNG</code> fully automated.</p>
+      </div>
+      <div style="padding:16px;background:var(--accent-tint);border:1px solid var(--line);">
+        <div style="font-weight:700;font-size:13px;margin-bottom:8px;color:var(--accent-dark);">The skill multiplier</div>
+        <p style="font-size:12px;color:var(--muted);">LLM creates a reusable rendering skill (Blender material library, UE5 scene template, Godot prefab). First image costs $0.40. Images 2–1000 cost only prompt tokens. Same economics as your crayon-art example.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOOLS REFERENCE -->
+<section id="benchmark">
+  <div class="s-head">
+    <div class="s-kicker">Live benchmark</div>
+    <h2 class="s-title">Same prompt. Four models. Real costs measured.</h2>
+    <p class="s-desc">Crayon-style illustration (boy with cat) generated as SVG via AWS Bedrock. Every image below was produced programmatically in a single API call — no image generation models involved.</p>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Benchmark results — 2026-07-08, us-east-1</div>
+    <div style="overflow-x:auto;">
+    <table class="ctable">
+      <thead><tr><th>Model</th><th>Time</th><th>In / Out tokens</th><th>Cost</th><th>SVG size</th><th>Visual quality</th></tr></thead>
+      <tbody>
+        <tr><td><b>Claude Opus 4.6</b></td><td class="num">69.1s</td><td class="num">322 / 6,437</td><td class="num">$0.163</td><td class="num">15.9 KB</td><td><span class="badge badge-ok">Most complete scene</span></td></tr>
+        <tr><td><b>Claude Opus 4.8</b></td><td class="num">47.7s</td><td class="num">450 / 4,089</td><td class="num">$0.105</td><td class="num">7.3 KB</td><td><span class="badge badge-ok">Fastest, cleanest style</span></td></tr>
+        <tr><td><b>Claude Sonnet 5</b></td><td class="num">48.6s</td><td class="num">450 / 6,128</td><td class="num">$0.093</td><td class="num">10.8 KB</td><td><span class="badge badge-warn">Cheapest, dark overlay issue</span></td></tr>
+        <tr><td><b>Claude Fable 5</b></td><td class="num">100.0s</td><td class="num">450 / 7,531</td><td class="num">$0.381</td><td class="num">13.2 KB</td><td><span class="badge badge-ok">Sophisticated filters, slow</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="insight"><b>Winner (cost/quality):</b> Opus 4.8 — clean crayon style at $0.105 in 48s. Sonnet 5 is cheapest but has a filter rendering issue (dark overlay). Fable 5 is 4× more expensive with no proportional quality gain for this task.</div>
+  </div>
+
+  <div class="split" style="grid-template-columns: repeat(2, 1fr); gap: 16px;">
+    <div class="panel" style="padding:16px;">
+      <div class="panel-title">Claude Opus 4.6 — $0.163 / 69.1s</div>
+      <div class="svg-preview" style="min-height:200px; padding:8px; overflow:hidden;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <!-- Filters for crayon effect -->
+  <defs>
+    <!-- Paper texture filter -->
+    <filter id="paperTexture" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="3" seed="5" result="noise"/>
+      <feColorMatrix type="saturate" values="0" in="noise" result="grayNoise"/>
+      <feBlend in="SourceGraphic" in2="grayNoise" mode="multiply" result="textured"/>
+    </filter>
+    
+    <!-- Crayon stroke filter - wobbly lines -->
+    <filter id="crayon" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="turbulence" baseFrequency="0.04" numOctaves="4" seed="2" result="turbulence"/>
+      <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="3" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    
+    <!-- Heavier crayon effect for larger shapes -->
+    <filter id="crayonHeavy" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="turbulence" baseFrequency="0.03" numOctaves="3" seed="8" result="turbulence"/>
+      <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="4" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    
+    <!-- Rough edges for fills -->
+    <filter id="roughFill" x="-3%" y="-3%" width="106%" height="106%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.5" numOctaves="2" seed="12" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    
+    <!-- Soft crayon for decorations -->
+    <filter id="crayonSoft" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="turbulence" baseFrequency="0.05" numOctaves="2" seed="15" result="turbulence"/>
+      <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="2" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+  
+  <!-- Background - white paper with slight texture -->
+  <rect width="800" height="600" fill="#fefcf5" filter="url(#paperTexture)"/>
+  
+  <!-- Ground / grass -->
+  <g filter="url(#crayonHeavy)">
+    <path d="M0 500 Q100 490 200 500 Q300 505 400 498 Q500 492 600 500 Q700 505 800 497 L800 600 L0 600 Z" fill="#7ec850" stroke="#4a9e2f" stroke-width="2"/>
+    <!-- Grass blades -->
+    <line x1="50" y1="500" x2="55" y2="480" stroke="#3d8a25" stroke-width="3" stroke-linecap="round"/>
+    <line x1="100" y1="498" x2="103" y2="478" stroke="#3d8a25" stroke-width="3" stroke-linecap="round"/>
+    <line x1="650" y1="500" x2="648" y2="479" stroke="#3d8a25" stroke-width="3" stroke-linecap="round"/>
+    <line x1="720" y1="499" x2="724" y2="476" stroke="#3d8a25" stroke-width="3" stroke-linecap="round"/>
+    <line x1="180" y1="502" x2="177" y2="482" stroke="#3d8a25" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Sky - sun -->
+  <g filter="url(#crayonHeavy)">
+    <circle cx="680" cy="90" r="50" fill="#FFD700" stroke="#FFA500" stroke-width="3"/>
+    <!-- Sun rays -->
+    <line x1="680" y1="30" x2="680" y2="10" stroke="#FFA500" stroke-width="4" stroke-linecap="round"/>
+    <line x1="680" y1="150" x2="680" y2="170" stroke="#FFA500" stroke-width="4" stroke-linecap="round"/>
+    <line x1="620" y1="90" x2="600" y2="90" stroke="#FFA500" stroke-width="4" stroke-linecap="round"/>
+    <line x1="740" y1="90" x2="760" y2="90" stroke="#FFA500" stroke-width="4" stroke-linecap="round"/>
+    <line x1="645" y1="55" x2="630" y2="40" stroke="#FFA500" stroke-width="4" stroke-linecap="round"/>
+    <line x1="715" y1="55" x2="730" y2="40" stroke="#FFA500" stroke-width="4" stroke-linecap="round"/>
+    <line x1="645" y1="125" x2="630" y2="140" stroke="#FFA500" stroke-width="4" stroke-linecap="round"/>
+    <line x1="715" y1="125" x2="730" y2="140" stroke="#FFA500" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Clouds -->
+  <g filter="url(#crayonSoft)">
+    <ellipse cx="150" cy="80" rx="60" ry="30" fill="white" stroke="#b0c4de" stroke-width="2"/>
+    <ellipse cx="120" cy="75" rx="35" ry="25" fill="white" stroke="#b0c4de" stroke-width="2"/>
+    <ellipse cx="185" cy="78" rx="30" ry="22" fill="white" stroke="#b0c4de" stroke-width="2"/>
+    
+    <ellipse cx="420" cy="60" rx="50" ry="25" fill="white" stroke="#b0c4de" stroke-width="2"/>
+    <ellipse cx="390" cy="55" rx="30" ry="20" fill="white" stroke="#b0c4de" stroke-width="2"/>
+    <ellipse cx="455" cy="58" rx="28" ry="18" fill="white" stroke="#b0c4de" stroke-width="2"/>
+  </g>
+  
+  <!-- BOY -->
+  <g filter="url(#crayon)">
+    <!-- Boy's body (t-shirt) -->
+    <path d="M310 320 L310 430 Q310 440 320 440 L390 440 Q400 440 400 430 L400 320 Q380 300 355 300 Q330 300 310 320 Z" fill="#4488ff" stroke="#2255aa" stroke-width="3"/>
+    
+    <!-- Boy's shorts -->
+    <rect x="315" y="435" width="80" height="40" rx="5" fill="#ff6633" stroke="#cc4422" stroke-width="3"/>
+    
+    <!-- Boy's legs -->
+    <line x1="335" y1="475" x2="335" y2="500" stroke="#f5c5a3" stroke-width="12" stroke-linecap="round"/>
+    <line x1="375" y1="475" x2="375" y2="500" stroke="#f5c5a3" stroke-width="12" stroke-linecap="round"/>
+    
+    <!-- Boy's shoes -->
+    <ellipse cx="335" cy="505" rx="14" ry="8" fill="#333" stroke="#111" stroke-width="2"/>
+    <ellipse cx="375" cy="505" rx="14" ry="8" fill="#333" stroke="#111" stroke-width="2"/>
+    
+    <!-- Boy's arms -->
+    <line x1="310" y1="330" x2="285" y2="380" stroke="#f5c5a3" stroke-width="10" stroke-linecap="round"/>
+    <line x1="400" y1="330" x2="430" y2="390" stroke="#f5c5a3" stroke-width="10" stroke-linecap="round"/>
+    
+    <!-- Boy's hand reaching toward cat -->
+    <circle cx="430" cy="395" r="8" fill="#f5c5a3" stroke="#e0a882" stroke-width="2"/>
+    
+    <!-- Boy's head -->
+    <circle cx="355" cy="265" r="50" fill="#f5c5a3" stroke="#d4956b" stroke-width="3"/>
+    
+    <!-- Boy's hair -->
+    <path d="M305 250 Q310 215 335 210 Q355 205 375 210 Q400 215 405 250 Q400 230 380 225 Q355 220 330 225 Q310 230 305 250 Z" fill="#5c3317" stroke="#3d1f0d" stroke-width="2"/>
+    <!-- Messy hair tufts -->
+    <path d="M340 212 Q345 195 350 212" fill="none" stroke="#5c3317" stroke-width="4" stroke-linecap="round"/>
+    <path d="M360 210 Q365 192 370 210" fill="none" stroke="#5c3317" stroke-width="4" stroke-linecap="round"/>
+    
+    <!-- Boy's eyes -->
+    <circle cx="340" cy="260" r="8" fill="white" stroke="#333" stroke-width="2"/>
+    <circle cx="370" cy="260" r="8" fill="white" stroke="#333" stroke-width="2"/>
+    <circle cx="342" cy="262" r="4" fill="#333"/>
+    <circle cx="372" cy="262" r="4" fill="#333"/>
+    <!-- Eye shine -->
+    <circle cx="344" cy="259" r="2" fill="white"/>
+    <circle cx="374" cy="259" r="2" fill="white"/>
+    
+    <!-- Boy's smile -->
+    <path d="M338 282 Q355 298 372 282" fill="none" stroke="#cc3333" stroke-width="3" stroke-linecap="round"/>
+    
+    <!-- Boy's cheeks (rosy) -->
+    <circle cx="328" cy="278" r="8" fill="#ffaaaa" opacity="0.5"/>
+    <circle cx="382" cy="278" r="8" fill="#ffaaaa" opacity="0.5"/>
+    
+    <!-- Boy's nose -->
+    <circle cx="355" cy="270" r="3" fill="#e8a882"/>
+  </g>
+  
+  <!-- CAT -->
+  <g filter="url(#crayon)">
+    <!-- Cat's body -->
+    <ellipse cx="500" cy="440" rx="45" ry="55" fill="#ff9933" stroke="#cc6600" stroke-width="3"/>
+    
+    <!-- Cat's head -->
+    <circle cx="500" cy="365" r="35" fill="#ff9933" stroke="#cc6600" stroke-width="3"/>
+    
+    <!-- Cat's ears (triangles) -->
+    <polygon points="475,340 468,305 492,330" fill="#ff9933" stroke="#cc6600" stroke-width="3"/>
+    <polygon points="525,340 532,305 508,330" fill="#ff9933" stroke="#cc6600" stroke-width="3"/>
+    <!-- Inner ears -->
+    <polygon points="477,335 472,315 489,330" fill="#ffcccc" stroke="none"/>
+    <polygon points="523,335 528,315 511,330" fill="#ffcccc" stroke="none"/>
+    
+    <!-- Cat's eyes -->
+    <ellipse cx="488" cy="362" rx="7" ry="8" fill="#66cc66" stroke="#333" stroke-width="2"/>
+    <ellipse cx="512" cy="362" rx="7" ry="8" fill="#66cc66" stroke="#333" stroke-width="2"/>
+    <!-- Cat pupils -->
+    <ellipse cx="488" cy="363" rx="3" ry="6" fill="#111"/>
+    <ellipse cx="512" cy="363" rx="3" ry="6" fill="#111"/>
+    
+    <!-- Cat's nose -->
+    <polygon points="500,373 496,378 504,378" fill="#ff6699" stroke="#cc3366" stroke-width="1"/>
+    
+    <!-- Cat's mouth -->
+    <path d="M496 380 Q492 387 488 383" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+    <path d="M504 380 Q508 387 512 383" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+    
+    <!-- Cat's whiskers -->
+    <line x1="470" y1="370" x2="445" y2="365" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+    <line x1="470" y1="378" x2="443" y2="380" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+    <line x1="470" y1="374" x2="444" y2="372" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+    <line x1="530" y1="370" x2="555" y2="365" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+    <line x1="530" y1="378" x2="557" y2="380" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+    <line x1="530" y1="374" x2="556" y2="372" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+    
+    <!-- Cat's legs -->
+    <ellipse cx="480" cy="495" rx="10" ry="12" fill="#ff9933" stroke="#cc6600" stroke-width="2"/>
+    <ellipse cx="520" cy="495" rx="10" ry="12" fill="#ff9933" stroke="#cc6600" stroke-width="2"/>
+    <!-- Paws -->
+    <ellipse cx="480" cy="503" rx="10" ry="5" fill="#ffcc99" stroke="#cc6600" stroke-width="2"/>
+    <ellipse cx="520" cy="503" rx="10" ry="5" fill="#ffcc99" stroke="#cc6600" stroke-width="2"/>
+    
+    <!-- Cat's tail -->
+    <path d="M545 440 Q570 420 565 390 Q562 375 555 370" fill="none" stroke="#ff9933" stroke-width="10" stroke-linecap="round"/>
+    <path d="M545 440 Q570 420 565 390 Q562 375 555 370" fill="none" stroke="#cc6600" stroke-width="3" stroke-linecap="round"/>
+    
+    <!-- Cat's stripes -->
+    <path d="M485 410 Q500 405 515 410" fill="none" stroke="#cc6600" stroke-width="3" stroke-linecap="round"/>
+    <path d="M483 425 Q500 420 517 425" fill="none" stroke="#cc6600" stroke-width="3" stroke-linecap="round"/>
+    <path d="M485 440 Q500 435 515 440" fill="none" stroke="#cc6600" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  
+  <!-- DECORATIVE ELEMENTS -->
+  
+  <!-- Flowers -->
+  <g filter="url(#crayonSoft)">
+    <!-- Flower 1 -->
+    <line x1="100" y1="500" x2="100" y2="440" stroke="#228b22" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="100" cy="430" r="8" fill="#ff69b4" stroke="#cc4488" stroke-width="2"/>
+    <circle cx="90" cy="430" r="6" fill="#ff99cc" stroke="#cc4488" stroke-width="1"/>
+    <circle cx="110" cy="430" r="6" fill="#ff99cc" stroke="#cc4488" stroke-width="1"/>
+    <circle cx="100" cy="420" r="6" fill="#ff99cc" stroke="#cc4488" stroke-width="1"/>
+    <circle cx="100" cy="440" r="6" fill="#ff99cc" stroke="#cc4488" stroke-width="1"/>
+    <circle cx="100" cy="430" r="4" fill="#ffff00"/>
+    
+    <!-- Flower 2 -->
+    <line x1="680" y1="500" x2="680" y2="430" stroke="#228b22" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="680" cy="420" r="8" fill="#ff4444" stroke="#cc2222" stroke-width="2"/>
+    <circle cx="670" cy="420" r="6" fill="#ff6666" stroke="#cc2222" stroke-width="1"/>
+    <circle cx="690" cy="420" r="6" fill="#ff6666" stroke="#cc2222" stroke-width="1"/>
+    <circle cx="680" cy="410" r="6" fill="#ff6666" stroke="#cc2222" stroke-width="1"/>
+    <circle cx="680" cy="430" r="6" fill="#ff6666" stroke="#cc2222" stroke-width="1"/>
+    <circle cx="680" cy="420" r="4" fill="#ffff00"/>
+    
+    <!-- Flower 3 - small daisy -->
+    <line x1="750" y1="498" x2="748" y2="455" stroke="#228b22" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="748" cy="448" r="5" fill="white" stroke="#aaa" stroke-width="1"/>
+    <circle cx="741" cy="448" r="4" fill="white" stroke="#aaa" stroke-width="1"/>
+    <circle cx="755" cy="448" r="4" fill="white" stroke="#aaa" stroke-width="1"/>
+    <circle cx="748" cy="441" r="4" fill="white" stroke="#aaa" stroke-width="1"/>
+    <circle cx="748" cy="455" r="4" fill="white" stroke="#aaa" stroke-width="1"/>
+    <circle cx="748" cy="448" r="3" fill="#ffdd00"/>
+  </g>
+  
+  <!-- Hearts -->
+  <g filter="url(#crayonSoft)">
+    <path d="M220 150 C215 140 200 140 200 155 C200 170 220 180 220 180 C220 180 240 170 240 155 C240 140 225 140 220 150 Z" fill="#ff4488" stroke="#cc2266" stroke-width="2"/>
+    
+    <path d="M600 200 C597 194 588 194 588 203 C588 212 600 218 600 218 C600 218 612 212 612 203 C612 194 603 194 600 200 Z" fill="#ff6699" stroke="#cc3366" stroke-width="2"/>
+    
+    <!-- Small heart between boy and cat -->
+    <path d="M440 340 C438 336 432 336 432 341 C432 346 440 350 440 350 C440 350 448 346 448 341 C448 336 442 336 440 340 Z" fill="#ff3366" stroke="#cc1144" stroke-width="1.5"/>
+  </g>
+  
+  <!-- Stars -->
+  <g filter="url(#crayonSoft)">
+    <polygon points="80,120 85,135 100,135 88,145 92,160 80,150 68,160 72,145 60,135 75,135" fill="#FFD700" stroke="#DAA520" stroke-width="2"/>
+    
+    <polygon points="550,100 553,110 563,110 555,116 558,126 550,120 542,126 545,116 537,110 547,110" fill="#FFD700" stroke="#DAA520" stroke-width="2"/>
+    
+    <polygon points="300,100 303,108 312,108 305,113 307,121 300,116 293,121 295,113 288,108 297,108" fill="#FFD700" stroke="#DAA520" stroke-width="1.5"/>
+  </g>
+  
+  <!-- Candy -->
+  <g filter="url(#crayonSoft)">
+    <ellipse cx="160" cy="200" rx="18" ry="15" fill="#ff66cc" stroke="#cc3399" stroke-width="2"/>
+    <path d="M160 200 L160 185" stroke="white" stroke-width="3" opacity="0.5"/>
+    <path d="M155 195 L155 205" stroke="white" stroke-width="2" opacity="0.5"/>
+    <!-- Candy wrapper ends -->
+    <path d="M142 200 Q135 195 130 200 Q135 205 142 200" fill="#ff99dd" stroke="#cc3399" stroke-width="1.5"/>
+    <path d="M178 200 Q185 195 190 200 Q185 205 178 200" fill="#ff99dd" stroke="#cc3399" stroke-width="1.5"/>
+  </g>
+  
+  <!-- Butterfly -->
+  <g filter="url(#crayonSoft)">
+    <ellipse cx="250" cy="300" rx="12" ry="8" fill="#9966ff" stroke="#6633cc" stroke-width="2" transform="rotate(-20 250 300)"/>
+    <ellipse cx="270" cy="300" rx="12" ry="8" fill="#cc66ff" stroke="#9933cc" stroke-width="2" transform="rotate(20 270 300)"/>
+    <ellipse cx="248" cy="308" rx="9" ry="6" fill="#9966ff" stroke="#6633cc" stroke-width="1.5" transform="rotate(15 248 308)"/>
+    <ellipse cx="272" cy="308" rx="9" ry="6" fill="#cc66ff" stroke="#9933cc" stroke-width="1.5" transform="rotate(-15 272 308)"/>
+    <line x1="260" y1="295" x2="260" y2="315" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+    <!-- Antennae -->
+    <path d="M260 295 Q255 285 250 283" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M260 295 Q265 285 270 283" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="250" cy="283" r="2" fill="#333"/>
+    <circle cx="270" cy="283" r="2" fill="#333"/>
+  </g>
+  
+  <!-- Rainbow in corner -->
+  <g filter="url(#crayonHeavy)" opacity="0.6">
+    <path d="M0 200 Q50 150 120 180" fill="none" stroke="#ff0000" stroke-width="6" stroke-linecap="round"/>
+    <path d="M0 210 Q50 160 120 190" fill="none" stroke="#ff8800" stroke-width="6" stroke-linecap="round"/>
+    <path d="M0 220 Q50 170 120 200" fill="none" stroke="#ffff00" stroke-width="6" stroke-linecap="round"/>
+    <path d="M0 230 Q50 180 120 210" fill="none" stroke="#00cc00" stroke-width="6" stroke-linecap="round"/>
+    <path d="M0 240 Q50 190 120 220" fill="none" stroke="#0066ff" stroke-width="6" stroke-linecap="round"/>
+    <path d="M0 250 Q50 200 120 230" fill="none" stroke="#8833ff" stroke-width="6" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Child's signature/name area -->
+  <g filter="url(#crayon)">
+    <text x="600" y="570" font-family="Comic Sans MS, cursive" font-size="18" fill="#6644aa" transform="rotate(-3 600 570)">my cat &amp; me ♡</text>
+  </g>
+</svg>
+      </div>
+    </div>
+    <div class="panel" style="padding:16px;">
+      <div class="panel-title">Claude Opus 4.8 — $0.105 / 47.7s</div>
+      <div class="svg-preview" style="min-height:200px; padding:8px; overflow:hidden;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <defs>
+    <!-- Crayon wobble filter -->
+    <filter id="crayon" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" seed="4" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="4" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="crayon2" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="9" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="6" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <!-- Paper texture -->
+    <filter id="paper">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" seed="1" result="t"/>
+      <feColorMatrix in="t" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.05 0"/>
+      <feComposite operator="over" in2="SourceGraphic"/>
+    </filter>
+  </defs>
+
+  <!-- Paper background -->
+  <rect width="800" height="600" fill="#fdfdf5"/>
+  <rect width="800" height="600" fill="#fffef8" filter="url(#paper)"/>
+
+  <!-- Ground line -->
+  <g filter="url(#crayon)" stroke-linecap="round">
+    <path d="M40 500 Q400 490 760 500" stroke="#7cc242" stroke-width="10" fill="none" stroke-dasharray="3 6"/>
+    <path d="M40 505 Q400 496 760 505" stroke="#8fd84f" stroke-width="6" fill="none"/>
+  </g>
+
+  <!-- Sun -->
+  <g filter="url(#crayon2)">
+    <circle cx="700" cy="90" r="45" fill="#ffe14d"/>
+    <g stroke="#ffcf1a" stroke-width="6" stroke-linecap="round">
+      <line x1="700" y1="20" x2="700" y2="0"/>
+      <line x1="760" y1="90" x2="790" y2="90"/>
+      <line x1="748" y1="42" x2="768" y2="22"/>
+      <line x1="748" y1="138" x2="768" y2="158"/>
+      <line x1="652" y1="42" x2="632" y2="22"/>
+    </g>
+  </g>
+
+  <!-- Clouds -->
+  <g filter="url(#crayon2)" fill="#cfeefe" stroke="#a8d8f0" stroke-width="4">
+    <ellipse cx="150" cy="90" rx="55" ry="28"/>
+    <ellipse cx="200" cy="95" rx="40" ry="22"/>
+    <ellipse cx="440" cy="70" rx="50" ry="24"/>
+    <ellipse cx="480" cy="75" rx="35" ry="18"/>
+  </g>
+
+  <!-- Flowers -->
+  <g filter="url(#crayon)">
+    <g transform="translate(90,470)">
+      <line x1="0" y1="0" x2="0" y2="40" stroke="#4caf50" stroke-width="6"/>
+      <circle cx="0" cy="-12" r="9" fill="#ff5c8a"/>
+      <circle cx="12" cy="0" r="9" fill="#ff5c8a"/>
+      <circle cx="-12" cy="0" r="9" fill="#ff5c8a"/>
+      <circle cx="0" cy="12" r="9" fill="#ff5c8a"/>
+      <circle cx="0" cy="0" r="8" fill="#ffe14d"/>
+    </g>
+    <g transform="translate(680,470)">
+      <line x1="0" y1="0" x2="0" y2="40" stroke="#4caf50" stroke-width="6"/>
+      <circle cx="0" cy="-12" r="9" fill="#8a5cff"/>
+      <circle cx="12" cy="0" r="9" fill="#8a5cff"/>
+      <circle cx="-12" cy="0" r="9" fill="#8a5cff"/>
+      <circle cx="0" cy="12" r="9" fill="#8a5cff"/>
+      <circle cx="0" cy="0" r="8" fill="#ffe14d"/>
+    </g>
+  </g>
+
+  <!-- Stars -->
+  <g filter="url(#crayon2)" fill="#ffd633" stroke="#f2b800" stroke-width="2">
+    <polygon points="300,140 306,158 325,158 310,170 316,188 300,176 284,188 290,170 275,158 294,158"/>
+    <polygon points="560,180 565,194 580,194 568,204 573,218 560,209 547,218 552,204 540,194 555,194"/>
+  </g>
+
+  <!-- Hearts -->
+  <g filter="url(#crayon)" fill="#ff5c8a">
+    <path d="M120 250 q-12 -14 -24 0 q-12 14 24 32 q36 -18 24 -32 q-12 -14 -24 0Z"/>
+    <path d="M640 300 q-9 -10 -18 0 q-9 10 18 24 q27 -14 18 -24 q-9 -10 -18 0Z"/>
+  </g>
+
+  <!-- Candy -->
+  <g filter="url(#crayon)" transform="translate(400,180)">
+    <circle cx="0" cy="0" r="22" fill="#ff8fc7" stroke="#e0559f" stroke-width="3"/>
+    <path d="M-4 -20 A22 22 0 0 1 12 -18" stroke="#fff" stroke-width="4" fill="none"/>
+    <polygon points="22,0 42,-14 42,14" fill="#ff8fc7" stroke="#e0559f" stroke-width="3"/>
+    <polygon points="-22,0 -42,-14 -42,14" fill="#ff8fc7" stroke="#e0559f" stroke-width="3"/>
+  </g>
+
+  <!-- ===== BOY ===== -->
+  <g filter="url(#crayon)" stroke-linecap="round" stroke-linejoin="round">
+    <!-- legs -->
+    <line x1="285" y1="440" x2="275" y2="500" stroke="#3a5fcd" stroke-width="14"/>
+    <line x1="320" y1="440" x2="330" y2="500" stroke="#3a5fcd" stroke-width="14"/>
+    <!-- shoes -->
+    <ellipse cx="270" cy="505" rx="18" ry="9" fill="#e03535"/>
+    <ellipse cx="335" cy="505" rx="18" ry="9" fill="#e03535"/>
+    <!-- body -->
+    <rect x="268" y="350" width="70" height="100" rx="18" fill="#ff9f1c"/>
+    <!-- arms -->
+    <line x1="272" y1="370" x2="230" y2="420" stroke="#ff9f1c" stroke-width="14"/>
+    <line x1="335" y1="370" x2="380" y2="410" stroke="#ff9f1c" stroke-width="14"/>
+    <!-- hands -->
+    <circle cx="228" cy="425" r="9" fill="#ffd6a5"/>
+    <circle cx="383" cy="413" r="9" fill="#ffd6a5"/>
+    <!-- neck -->
+    <rect x="295" y="335" width="16" height="20" fill="#ffd6a5"/>
+    <!-- head -->
+    <circle cx="303" cy="300" r="48" fill="#ffd6a5"/>
+    <!-- hair -->
+    <path d="M258 288 Q265 250 303 248 Q345 250 350 290 Q330 268 303 272 Q278 268 258 288Z" fill="#6b3e13"/>
+    <!-- eyes -->
+    <circle cx="288" cy="298" r="6" fill="#333"/>
+    <circle cx="320" cy="298" r="6" fill="#333"/>
+    <!-- cheeks -->
+    <circle cx="278" cy="315" r="7" fill="#ffb3b3" opacity="0.7"/>
+    <circle cx="330" cy="315" r="7" fill="#ffb3b3" opacity="0.7"/>
+    <!-- smile -->
+    <path d="M285 318 Q303 335 322 318" stroke="#c0392b" stroke-width="4" fill="none"/>
+  </g>
+
+  <!-- ===== CAT ===== -->
+  <g filter="url(#crayon)" stroke-linecap="round" stroke-linejoin="round">
+    <!-- tail -->
+    <path d="M500 470 Q560 460 545 410" stroke="#f7a94f" stroke-width="12" fill="none"/>
+    <!-- body -->
+    <ellipse cx="460" cy="450" rx="55" ry="45" fill="#f7a94f"/>
+    <!-- head -->
+    <circle cx="460" cy="395" r="38" fill="#f7a94f"/>
+    <!-- ears -->
+    <polygon points="432,372 424,340 452,362" fill="#f7a94f"/>
+    <polygon points="488,372 496,340 468,362" fill="#f7a94f"/>
+    <polygon points="435,367 431,350 447,362" fill="#ffb3b3"/>
+    <polygon points="485,367 489,350 473,362" fill="#ffb3b3"/>
+    <!-- stripes -->
+    <line x1="445" y1="430" x2="475" y2="430" stroke="#e08828" stroke-width="4"/>
+    <line x1="440" y1="450" x2="480" y2="450" stroke="#e08828" stroke-width="4"/>
+    <!-- eyes -->
+    <circle cx="447" cy="392" r="5" fill="#333"/>
+    <circle cx="473" cy="392" r="5" fill="#333"/>
+    <!-- nose -->
+    <polygon points="460,402 455,408 465,408" fill="#e0559f"/>
+    <!-- mouth -->
+    <path d="M460 408 Q453 416 447 412 M460 408 Q467 416 473 412" stroke="#333" stroke-width="2" fill="none"/>
+    <!-- whiskers -->
+    <g stroke="#555" stroke-width="2">
+      <line x1="430" y1="402" x2="400" y2="398"/>
+      <line x1="430" y1="408" x2="400" y2="410"/>
+      <line x1="490" y1="402" x2="520" y2="398"/>
+      <line x1="490" y1="408" x2="520" y2="410"/>
+    </g>
+  </g>
+
+  <!-- little grass tufts -->
+  <g filter="url(#crayon)" stroke="#5eae2f" stroke-width="4" stroke-linecap="round">
+    <path d="M200 500 l-4 -18 M206 500 l0 -20 M212 500 l4 -18" fill="none"/>
+    <path d="M560 505 l-4 -18 M566 505 l0 -20 M572 505 l4 -18" fill="none"/>
+  </g>
+
+  <!-- Title text -->
+  <g filter="url(#crayon)">
+    <text x="400" y="560" font-family="Comic Sans MS, cursive" font-size="34" fill="#e0559f" text-anchor="middle" stroke="#c0398a" stroke-width="0.6">Me and my cat!</text>
+  </g>
+</svg>
+      </div>
+    </div>
+    <div class="panel" style="padding:16px;">
+      <div class="panel-title">Claude Sonnet 5 — $0.093 / 48.6s</div>
+      <div class="svg-preview" style="min-height:200px; padding:8px; overflow:hidden;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <defs>
+    <!-- Paper texture -->
+    <filter id="paperTexture" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" result="noise" seed="5"/>
+      <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0.95  0 0 0 0 0.95  0 0 0 0 0.92  0 0 0 0.05 0"/>
+    </filter>
+
+    <!-- Crayon wobble for strokes -->
+    <filter id="crayon" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" result="turb" seed="3"/>
+      <feDisplacementMap in="SourceGraphic" in2="turb" scale="4" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+
+    <filter id="crayonSoft" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" result="turb2" seed="7"/>
+      <feDisplacementMap in="SourceGraphic" in2="turb2" scale="3" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+
+    <filter id="grain" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" result="grain" seed="11"/>
+      <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.04 0"/>
+      <feComposite in2="SourceGraphic" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background paper -->
+  <rect width="800" height="600" fill="#fffdf6"/>
+  <rect width="800" height="600" filter="url(#paperTexture)" opacity="0.6"/>
+
+  <!-- Sky wash -->
+  <rect x="0" y="0" width="800" height="420" fill="#eaf6ff" opacity="0.5"/>
+
+  <!-- Grass -->
+  <path d="M0,470 Q200,440 400,465 Q600,490 800,460 L800,600 L0,600 Z" fill="#bdeb9a" filter="url(#crayonSoft)"/>
+  <path d="M0,470 Q200,440 400,465 Q600,490 800,460" fill="none" stroke="#7fc94f" stroke-width="4" filter="url(#crayon)" opacity="0.7"/>
+
+  <!-- Sun -->
+  <g filter="url(#crayon)">
+    <circle cx="690" cy="90" r="45" fill="#ffd93d" stroke="#ffb100" stroke-width="4"/>
+    <line x1="690" y1="20" x2="690" y2="5" stroke="#ffb100" stroke-width="4" stroke-linecap="round"/>
+    <line x1="690" y1="160" x2="690" y2="175" stroke="#ffb100" stroke-width="4" stroke-linecap="round"/>
+    <line x1="620" y1="90" x2="605" y2="90" stroke="#ffb100" stroke-width="4" stroke-linecap="round"/>
+    <line x1="760" y1="90" x2="775" y2="90" stroke="#ffb100" stroke-width="4" stroke-linecap="round"/>
+    <line x1="638" y1="40" x2="628" y2="28" stroke="#ffb100" stroke-width="4" stroke-linecap="round"/>
+    <line x1="742" y1="40" x2="752" y2="28" stroke="#ffb100" stroke-width="4" stroke-linecap="round"/>
+    <line x1="638" y1="140" x2="628" y2="152" stroke="#ffb100" stroke-width="4" stroke-linecap="round"/>
+    <line x1="742" y1="140" x2="752" y2="152" stroke="#ffb100" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- Clouds -->
+  <g filter="url(#crayon)" opacity="0.9">
+    <g fill="#ffffff" stroke="#cfe8f7" stroke-width="3">
+      <ellipse cx="130" cy="90" rx="45" ry="24"/>
+      <ellipse cx="170" cy="80" rx="35" ry="22"/>
+      <ellipse cx="95" cy="85" rx="30" ry="18"/>
+    </g>
+    <g fill="#ffffff" stroke="#cfe8f7" stroke-width="3">
+      <ellipse cx="420" cy="60" rx="40" ry="20"/>
+      <ellipse cx="455" cy="52" rx="28" ry="16"/>
+      <ellipse cx="390" cy="55" rx="25" ry="14"/>
+    </g>
+  </g>
+
+  <!-- Stars -->
+  <g filter="url(#crayon)" fill="#ffe14d" stroke="#f6b400" stroke-width="2">
+    <path d="M250,40 L256,55 L272,55 L259,65 L264,80 L250,71 L236,80 L241,65 L228,55 L244,55 Z"/>
+    <path d="M560,150 L565,161 L577,161 L567,168 L571,180 L560,173 L549,180 L553,168 L543,161 L555,161 Z"/>
+  </g>
+
+  <!-- Flowers -->
+  <g filter="url(#crayon)">
+    <g transform="translate(90,470)">
+      <line x1="0" y1="0" x2="0" y2="45" stroke="#4caf50" stroke-width="4"/>
+      <circle cx="0" cy="-10" r="8" fill="#ff6f91"/>
+      <circle cx="10" cy="0" r="8" fill="#ff6f91"/>
+      <circle cx="-10" cy="0" r="8" fill="#ff6f91"/>
+      <circle cx="0" cy="8" r="8" fill="#ff6f91"/>
+      <circle cx="0" cy="0" r="7" fill="#ffe14d"/>
+    </g>
+    <g transform="translate(660,480)">
+      <line x1="0" y1="0" x2="0" y2="40" stroke="#4caf50" stroke-width="4"/>
+      <circle cx="0" cy="-9" r="7" fill="#8ecae6"/>
+      <circle cx="9" cy="0" r="7" fill="#8ecae6"/>
+      <circle cx="-9" cy="0" r="7" fill="#8ecae6"/>
+      <circle cx="0" cy="7" r="7" fill="#8ecae6"/>
+      <circle cx="0" cy="0" r="6" fill="#ffe14d"/>
+    </g>
+    <g transform="translate(600,520)">
+      <line x1="0" y1="0" x2="0" y2="35" stroke="#4caf50" stroke-width="4"/>
+      <circle cx="0" cy="-8" r="6" fill="#ff9ecb"/>
+      <circle cx="8" cy="0" r="6" fill="#ff9ecb"/>
+      <circle cx="-8" cy="0" r="6" fill="#ff9ecb"/>
+      <circle cx="0" cy="6" r="6" fill="#ff9ecb"/>
+      <circle cx="0" cy="0" r="5" fill="#ffe14d"/>
+    </g>
+  </g>
+
+  <!-- Hearts floating -->
+  <g filter="url(#crayon)" fill="#ff6f91">
+    <path d="M330,140 C330,130 345,128 345,138 C345,128 360,130 360,140 C360,152 345,162 345,162 C345,162 330,152 330,140 Z"/>
+  </g>
+  <g filter="url(#crayon)" fill="#ff9ecb" opacity="0.9">
+    <path d="M500,220 C500,213 510,211 510,219 C510,211 520,213 520,220 C520,229 510,236 510,236 C510,236 500,229 500,220 Z"/>
+  </g>
+
+  <!-- Candy -->
+  <g filter="url(#crayon)" transform="translate(160,300)">
+    <circle cx="0" cy="0" r="20" fill="#ff5c8a" stroke="#c9195a" stroke-width="3"/>
+    <path d="M0,-20 A20,20 0 0,1 20,0" fill="#ffd93d"/>
+    <path d="M-20,0 A20,20 0 0,1 0,20" fill="#ffd93d"/>
+    <line x1="-30" y1="-25" x2="-15" y2="-14" stroke="#c9195a" stroke-width="3" stroke-linecap="round"/>
+    <line x1="30" y1="-25" x2="15" y2="-14" stroke="#c9195a" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- ===================== BOY ===================== -->
+  <g filter="url(#crayon)">
+    <!-- Legs -->
+    <line x1="380" y1="470" x2="375" y2="560" stroke="#3a3a3a" stroke-width="10" stroke-linecap="round"/>
+    <line x1="415" y1="470" x2="420" y2="560" stroke="#3a3a3a" stroke-width="10" stroke-linecap="round"/>
+    <!-- Shoes -->
+    <ellipse cx="370" cy="565" rx="18" ry="9" fill="#333"/>
+    <ellipse cx="425" cy="565" rx="18" ry="9" fill="#333"/>
+
+    <!-- Body -->
+    <path d="M340,340 Q335,420 355,470 L440,470 Q460,420 455,340 Q400,320 340,340 Z" fill="#5ec8f2" stroke="#2e9ad1" stroke-width="4"/>
+
+    <!-- Arms -->
+    <path d="M345,350 Q305,380 290,430" fill="none" stroke="#5ec8f2" stroke-width="16" stroke-linecap="round"/>
+    <path d="M450,350 Q495,375 505,410" fill="none" stroke="#5ec8f2" stroke-width="16" stroke-linecap="round"/>
+    <!-- Hands -->
+    <circle cx="288" cy="435" r="12" fill="#ffd9b3" stroke="#e8ab77" stroke-width="3"/>
+    <circle cx="508" cy="413" r="12" fill="#ffd9b3" stroke="#e8ab77" stroke-width="3"/>
+
+    <!-- Neck -->
+    <rect x="385" y="315" width="25" height="20" fill="#ffd9b3"/>
+
+    <!-- Head -->
+    <circle cx="398" cy="260" r="70" fill="#ffd9b3" stroke="#e8ab77" stroke-width="4"/>
+
+    <!-- Ears -->
+    <circle cx="330" cy="262" r="12" fill="#ffd9b3" stroke="#e8ab77" stroke-width="3"/>
+    <circle cx="466" cy="262" r="12" fill="#ffd9b3" stroke="#e8ab77" stroke-width="3"/>
+
+    <!-- Hair -->
+    <path d="M330,230 Q335,180 398,178 Q460,180 468,232 Q450,205 398,205 Q345,205 330,230 Z" fill="#7a4a2b" stroke="#5c341c" stroke-width="3"/>
+    <path d="M340,205 Q330,190 345,175" fill="none" stroke="#5c341c" stroke-width="5" stroke-linecap="round"/>
+    <path d="M456,205 Q468,190 452,175" fill="none" stroke="#5c341c" stroke-width="5" stroke-linecap="round"/>
+
+    <!-- Face: eyes -->
+    <circle cx="375" cy="255" r="7" fill="#333"/>
+    <circle cx="422" cy="255" r="7" fill="#333"/>
+    <circle cx="373" cy="252" r="2" fill="#fff"/>
+    <circle cx="420" cy="252" r="2" fill="#fff"/>
+
+    <!-- Cheeks -->
+    <circle cx="358" cy="280" r="10" fill="#ff9ecb" opacity="0.6"/>
+    <circle cx="440" cy="280" r="10" fill="#ff9ecb" opacity="0.6"/>
+
+    <!-- Smile -->
+    <path d="M370,290 Q398,320 428,288" fill="none" stroke="#c9195a" stroke-width="5" stroke-linecap="round"/>
+
+    <!-- Eyebrows -->
+    <path d="M362,240 Q375,232 388,240" fill="none" stroke="#5c341c" stroke-width="4" stroke-linecap="round"/>
+    <path d="M410,240 Q422,232 435,240" fill="none" stroke="#5c341c" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- ===================== CAT ===================== -->
+  <g filter="url(#crayon)">
+    <!-- Tail -->
+    <path d="M560,450 Q610,430 615,380" fill="none" stroke="#ff9a3d" stroke-width="14" stroke-linecap="round"/>
+
+    <!-- Body -->
+    <ellipse cx="560" cy="470" rx="65" ry="55" fill="#ffb35c" stroke="#e08a2b" stroke-width="4"/>
+
+    <!-- Front legs -->
+    <line x1="530" y1="510" x2="525" y2="545" stroke="#ffb35c" stroke-width="12" stroke-linecap="round"/>
+    <line x1="590" y1="510" x2="595" y2="545" stroke="#ffb35c" stroke-width="12" stroke-linecap="round"/>
+    <ellipse cx="524" cy="550" rx="12" ry="6" fill="#fff4e6"/>
+    <ellipse cx="596" cy="550" rx="12" ry="6" fill="#fff4e6"/>
+
+    <!-- Head -->
+    <circle cx="560" cy="390" r="48" fill="#ffb35c" stroke="#e08a2b" stroke-width="4"/>
+
+    <!-- Ears -->
+    <path d="M525,360 L515,325 L545,345 Z" fill="#ffb35c" stroke="#e08a2b" stroke-width="3"/>
+    <path d="M595,360 L605,325 L575,345 Z" fill="#ffb35c" stroke="#e08a2b" stroke-width="3"/>
+    <path d="M528,355 L522,335 L540,347 Z" fill="#ff9ecb"/>
+    <path d="M592,355 L598,335 L580,347 Z" fill="#ff9ecb"/>
+
+    <!-- Face -->
+    <circle cx="543" cy="390" r="5" fill="#333"/>
+    <circle cx="577" cy="390" r="5" fill="#333"/>
+    <circle cx="560" cy="402" r="4" fill="#e08a2b"/>
+
+    <!-- Mouth -->
+    <path d="M552,410 Q560,416 568,410" fill="none" stroke="#c9195a" stroke-width="3" stroke-linecap="round"/>
+
+    <!-- Whiskers -->
+    <line x1="520" y1="398" x2="480" y2="393" stroke="#333" stroke-width="2"/>
+    <line x1="520" y1="405" x2="480" y2="408" stroke="#333" stroke-width="2"/>
+    <line x1="600" y1="398" x2="640" y2="393" stroke="#333" stroke-width="2"/>
+    <line x1="600" y1="405" x2="640" y2="408" stroke="#333" stroke-width="2"/>
+
+    <!-- Stripes -->
+    <path d="M600,460 Q615,462 620,475" fill="none" stroke="#e08a2b" stroke-width="4" stroke-linecap="round"/>
+    <path d="M600,480 Q617,482 623,495" fill="none" stroke="#e08a2b" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- Little sparkle hearts near boy & cat -->
+  <g filter="url(#crayon)" fill="#ff6f91" opacity="0.85">
+    <path d="M470,430 C470,424 478,423 478,429 C478,423 486,424 486,430 C486,437 478,443 478,443 C478,443 470,437 470,430 Z"/>
+  </g>
+
+  <!-- Ground grass strokes -->
+  <g filter="url(#crayon)" stroke="#7fc94f" stroke-width="3" stroke-linecap="round" fill="none">
+    <path d="M60,490 q4,-15 0,-25"/>
+    <path d="M120,500 q4,-15 0,-25"/>
+    <path d="M700,500 q4,-15 0,-25"/>
+    <path d="M750,480 q4,-15 0,-25"/>
+    <path d="M250,500 q4,-15 0,-25"/>
+  </g>
+
+  <!-- Overall grain -->
+  <rect width="800" height="600" filter="url(#grain)" opacity="0.5"/>
+</svg>
+      </div>
+    </div>
+    <div class="panel" style="padding:16px;">
+      <div class="panel-title">Claude Fable 5 — $0.381 / 100.0s</div>
+      <div class="svg-preview" style="min-height:200px; padding:8px; overflow:hidden;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <defs>
+    <!-- wobbly crayon line filter -->
+    <filter id="crayon" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="7" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="6" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="crayon2" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.09" numOctaves="2" seed="42" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <!-- rough fill texture filter -->
+    <filter id="scribble" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.12" numOctaves="3" seed="11" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="8" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <!-- paper texture -->
+    <filter id="paper">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" seed="3" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.97  0 0 0 0 0.96  0 0 0 0 0.93  0 0 0 0.35 0"/>
+      <feComposite in2="SourceGraphic" operator="over"/>
+    </filter>
+    <!-- crayon fill grain -->
+    <filter id="grain" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.3" numOctaves="2" seed="9" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="7"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.85"/></feComponentTransfer>
+    </filter>
+  </defs>
+
+  <!-- paper background -->
+  <rect width="800" height="600" fill="#fffdf5"/>
+  <rect width="800" height="600" fill="#fffdf5" filter="url(#paper)"/>
+
+  <!-- sun -->
+  <g filter="url(#crayon)">
+    <circle cx="90" cy="85" r="38" fill="#ffe066" stroke="#ffb703" stroke-width="5" stroke-dasharray="14 5" filter="url(#grain)"/>
+    <g stroke="#ffb703" stroke-width="5" stroke-linecap="round" stroke-dasharray="10 6">
+      <line x1="90" y1="20" x2="90" y2="38"/>
+      <line x1="90" y1="132" x2="90" y2="150"/>
+      <line x1="25" y1="85" x2="43" y2="85"/>
+      <line x1="137" y1="85" x2="155" y2="85"/>
+      <line x1="44" y1="39" x2="57" y2="52"/>
+      <line x1="123" y1="118" x2="136" y2="131"/>
+      <line x1="136" y1="39" x2="123" y2="52"/>
+      <line x1="57" y1="118" x2="44" y2="131"/>
+    </g>
+    <!-- sun face -->
+    <circle cx="78" cy="80" r="3.5" fill="#e07a00"/>
+    <circle cx="102" cy="80" r="3.5" fill="#e07a00"/>
+    <path d="M 78 94 Q 90 103 102 94" fill="none" stroke="#e07a00" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- clouds -->
+  <g filter="url(#crayon2)" stroke="#8ecae6" stroke-width="5" fill="#e3f4fd" stroke-dasharray="12 5" stroke-linecap="round">
+    <path d="M 230 70 q 15 -30 45 -20 q 12 -25 42 -14 q 30 -10 38 18 q 28 3 20 26 q -8 18 -35 14 l -90 0 q -28 -2 -20 -24 z"/>
+    <path d="M 590 100 q 12 -25 40 -17 q 10 -22 38 -12 q 26 -8 33 15 q 24 3 17 23 q -7 15 -30 12 l -78 0 q -25 -2 -20 -21 z"/>
+  </g>
+
+  <!-- grass ground -->
+  <g filter="url(#crayon)">
+    <path d="M -10 505 Q 200 490 400 502 Q 600 514 810 498 L 810 610 L -10 610 Z" fill="#b7e4a0" filter="url(#grain)"/>
+    <path d="M -10 505 Q 200 490 400 502 Q 600 514 810 498" fill="none" stroke="#6fbf5a" stroke-width="6" stroke-dasharray="18 7" stroke-linecap="round"/>
+    <!-- grass tufts -->
+    <g stroke="#5aa84a" stroke-width="4" stroke-linecap="round" fill="none">
+      <path d="M 60 545 l -6 -18 M 68 545 l 2 -20 M 76 545 l 8 -15"/>
+      <path d="M 700 555 l -6 -18 M 708 555 l 2 -20 M 716 555 l 8 -15"/>
+      <path d="M 190 570 l -6 -16 M 198 570 l 2 -18 M 206 570 l 8 -13"/>
+      <path d="M 620 528 l -6 -16 M 628 528 l 2 -18 M 636 528 l 8 -13"/>
+    </g>
+  </g>
+
+  <!-- flowers -->
+  <g filter="url(#crayon2)">
+    <!-- flower 1 -->
+    <g>
+      <line x1="130" y1="560" x2="130" y2="510" stroke="#5aa84a" stroke-width="5" stroke-dasharray="9 4"/>
+      <g fill="#ff8fab" stroke="#f4507a" stroke-width="3">
+        <circle cx="130" cy="492" r="10"/><circle cx="112" cy="504" r="10"/><circle cx="148" cy="504" r="10"/>
+        <circle cx="118" cy="522" r="10"/><circle cx="142" cy="522" r="10"/>
+      </g>
+      <circle cx="130" cy="509" r="9" fill="#ffd60a" stroke="#e0a800" stroke-width="3"/>
+    </g>
+    <!-- flower 2 -->
+    <g>
+      <line x1="670" y1="590" x2="670" y2="538" stroke="#5aa84a" stroke-width="5" stroke-dasharray="9 4"/>
+      <g fill="#a7c7ff" stroke="#5a7fe0" stroke-width="3">
+        <circle cx="670" cy="520" r="10"/><circle cx="652" cy="532" r="10"/><circle cx="688" cy="532" r="10"/>
+        <circle cx="658" cy="550" r="10"/><circle cx="682" cy="550" r="10"/>
+      </g>
+      <circle cx="670" cy="536" r="9" fill="#ffd60a" stroke="#e0a800" stroke-width="3"/>
+    </g>
+    <!-- small flower 3 -->
+    <g>
+      <line x1="270" y1="585" x2="270" y2="552" stroke="#5aa84a" stroke-width="4" stroke-dasharray="8 4"/>
+      <g fill="#ffbe5c" stroke="#e58a00" stroke-width="3">
+        <circle cx="270" cy="538" r="8"/><circle cx="256" cy="548" r="8"/><circle cx="284" cy="548" r="8"/>
+        <circle cx="261" cy="562" r="8"/><circle cx="279" cy="562" r="8"/>
+      </g>
+      <circle cx="270" cy="551" r="7" fill="#ff5c8a" stroke="#d13a67" stroke-width="3"/>
+    </g>
+  </g>
+
+  <!-- stars -->
+  <g filter="url(#crayon2)" fill="#ffd60a" stroke="#f0a500" stroke-width="3" stroke-linejoin="round">
+    <path d="M 200 160 l 7 15 16 2 -12 11 3 16 -14 -8 -14 8 3 -16 -12 -11 16 -2 z"/>
+    <path d="M 720 210 l 6 13 14 2 -10 10 2 14 -12 -7 -12 7 2 -14 -10 -10 14 -2 z"/>
+    <path d="M 520 60 l 6 13 14 2 -10 10 2 14 -12 -7 -12 7 2 -14 -10 -10 14 -2 z"/>
+    <path d="M 60 250 l 5 11 12 2 -9 9 2 12 -10 -6 -10 6 2 -12 -9 -9 12 -2 z"/>
+  </g>
+
+  <!-- hearts -->
+  <g filter="url(#crayon2)" fill="#ff6b81" stroke="#e63956" stroke-width="3">
+    <path d="M 640 320 c -8 -12 -26 -6 -24 8 c 2 11 24 24 24 24 c 0 0 22 -13 24 -24 c 2 -14 -16 -20 -24 -8 z"/>
+    <path d="M 160 340 c -6 -10 -21 -5 -19 6 c 1 9 19 19 19 19 c 0 0 18 -10 19 -19 c 2 -11 -13 -16 -19 -6 z"/>
+    <path d="M 560 460 c -5 -8 -17 -4 -16 5 c 1 7 16 16 16 16 c 0 0 15 -9 16 -16 c 1 -9 -11 -13 -16 -5 z"/>
+  </g>
+
+  <!-- candy -->
+  <g filter="url(#crayon2)" transform="translate(720,430) rotate(-15)">
+    <circle cx="0" cy="0" r="20" fill="#ff8fab" stroke="#e63956" stroke-width="4"/>
+    <path d="M -14 -12 Q 0 -3 14 -12 M -17 0 Q 0 8 17 0 M -13 12 Q 0 18 13 12" fill="none" stroke="#e63956" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M -19 -8 l -16 -10 l 3 12 l -12 4 z" fill="#ffd60a" stroke="#e0a800" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M 19 8 l 16 10 l -3 -12 l 12 -4 z" fill="#ffd60a" stroke="#e0a800" stroke-width="3" stroke-linejoin="round"/>
+  </g>
+
+  <!-- ================= BOY ================= -->
+  <g filter="url(#crayon)">
+    <!-- legs -->
+    <g stroke="#3a6ea5" stroke-width="8" stroke-linecap="round" fill="none" stroke-dasharray="16 5">
+      <line x1="345" y1="430" x2="335" y2="505"/>
+      <line x1="385" y1="430" x2="395" y2="505"/>
+    </g>
+    <!-- shoes -->
+    <g fill="#e63946" stroke="#b02633" stroke-width="4">
+      <ellipse cx="325" cy="512" rx="20" ry="10"/>
+      <ellipse cx="405" cy="512" rx="20" ry="10"/>
+    </g>
+    <!-- body / shirt -->
+    <path d="M 330 335 Q 365 320 400 335 L 410 435 Q 365 448 320 435 Z" fill="#ffd60a" stroke="#e0a800" stroke-width="5" stroke-dasharray="14 5" filter="url(#grain)"/>
+    <!-- shirt stripes -->
+    <g stroke="#ff8500" stroke-width="5" fill="none" stroke-dasharray="10 5">
+      <path d="M 326 370 Q 365 380 404 370"/>
+      <path d="M 323 400 Q 365 410 407 400"/>
+    </g>
+    <!-- left arm waving -->
+    <path d="M 333 350 Q 295 330 280 290" fill="none" stroke="#f4b183" stroke-width="9" stroke-linecap="round" stroke-dasharray="15 5"/>
+    <circle cx="278" cy="285" r="10" fill="#f4b183" stroke="#d98d5a" stroke-width="3"/>
+    <!-- right arm toward cat -->
+    <path d="M 398 355 Q 435 380 460 408" fill="none" stroke="#f4b183" stroke-width="9" stroke-linecap="round" stroke-dasharray="15 5"/>
+    <circle cx="463" cy="412" r="10" fill="#f4b183" stroke="#d98d5a" stroke-width="3"/>
+    <!-- head -->
+    <circle cx="365" cy="255" r="72" fill="#fbd2a8" stroke="#e0975b" stroke-width="5" stroke-dasharray="16 5" filter="url(#grain)"/>
+    <!-- hair scribble -->
+    <path d="M 298 240 Q 300 185 350 178 Q 370 168 395 180 Q 435 185 433 238 Q 425 215 405 222 Q 410 200 390 205 Q 388 190 368 197 Q 355 185 345 202 Q 325 195 328 218 Q 305 212 298 240 z" fill="#8a5a2b" stroke="#6b431e" stroke-width="4" stroke-linejoin="round" filter="url(#grain)"/>
+    <!-- ears -->
+    <circle cx="294" cy="258" r="11" fill="#fbd2a8" stroke="#e0975b" stroke-width="4"/>
+    <circle cx="436" cy="258" r="11" fill="#fbd2a8" stroke="#e0975b" stroke-width="4"/>
+    <!-- eyes -->
+    <circle cx="340" cy="255" r="7" fill="#2b2b2b"/>
+    <circle cx="390" cy="255" r="7" fill="#2b2b2b"/>
+    <circle cx="342.5" cy="252.5" r="2.2" fill="#ffffff"/>
+    <circle cx="392.5" cy="252.5" r="2.2" fill="#ffffff"/>
+    <!-- eyebrows -->
+    <path d="M 328 240 q 12 -7 24 -2" fill="none" stroke="#6b431e" stroke-width="4" stroke-linecap="round"/>
+    <path d="M 378 238 q 12 -5 24 2" fill="none" stroke="#6b431e" stroke-width="4" stroke-linecap="round"/>
+    <!-- blush -->
+    <ellipse cx="322" cy="278" rx="11" ry="7" fill="#ff9eb0" opacity="0.7"/>
+    <ellipse cx="408" cy="278" rx="11" ry="7" fill="#ff9eb0" opacity="0.7"/>
+    <!-- nose -->
+    <circle cx="365" cy="272" r="5" fill="#f0a86e"/>
+    <!-- big smile -->
+    <path d="M 335 290 Q 365 315 395 290" fill="none" stroke="#c1440e" stroke-width="5" stroke-linecap="round"/>
+  </g>
+
+  <!-- ================= CAT ================= -->
+  <g filter="url(#crayon2)">
+    <!-- tail -->
+    <path d="M 570 470 Q 615 460 610 415 Q 607 395 590 395" fill="none" stroke="#f4a259" stroke-width="10" stroke-linecap="round" stroke-dasharray="14 5"/>
+    <!-- body -->
+    <ellipse cx="510" cy="470" rx="62" ry="48" fill="#fdc57b" stroke="#e0863a" stroke-width="5" stroke-dasharray="14 5" filter="url(#grain)"/>
+    <!-- belly -->
+    <ellipse cx="510" cy="483" rx="32" ry="26" fill="#fff1d6" stroke="none"/>
+    <!-- paws -->
+    <ellipse cx="482" cy="514" rx="14" ry="9" fill="#fdc57b" stroke="#e0863a" stroke-width="4"/>
+    <ellipse cx="538" cy="514" rx="14" ry="9" fill="#fdc57b" stroke="#e0863a" stroke-width="4"/>
+    <!-- head -->
+    <circle cx="510" cy="392" r="46" fill="#fdc57b" stroke="#e0863a" stroke-width="5" stroke-dasharray="14 5" filter="url(#grain)"/>
+    <!-- ears -->
+    <path d="M 476 366 L 466 328 L 498 350 Z" fill="#fdc57b" stroke="#e0863a" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M 544 366 L 554 328 L 522 350 Z" fill="#fdc57b" stroke="#e0863a" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M 479 358 L 474 340 L 490 351 Z" fill="#ff9eb0" stroke="none"/>
+    <path d="M 541 358 L 546 340 L 530 351 Z" fill="#ff9eb0" stroke="none"/>
+    <!-- eyes (happy closed) -->
+    <path d="M 488 388 q 7 -8 14 0" fill="none" stroke="#2b2b2b" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M 518 388 q 7 -8 14 0" fill="none" stroke="#2b2b2b" stroke-width="4.5" stroke-linecap="round"/>
+    <!-- nose + mouth -->
+    <path d="M 505 400 L 515 400 L 510 407 Z" fill="#ff6b81" stroke="#e63956" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M 510 407 Q 510 414 502 415 M 510 407 Q 510 414 518 415" fill="none" stroke="#a05a1e" stroke-width="3.5" stroke-linecap="round"/>
+    <!-- whiskers -->
+    <g stroke="#a05a1e" stroke-width="3" stroke-linecap="round" fill="none">
+      <line x1="470" y1="398" x2="440" y2="392"/>
+      <line x1="470" y1="408" x2="442" y2="412"/>
+      <line x1="550" y1="398" x2="580" y2="392"/>
+      <line x1="550" y1="408" x2="578" y2="412"/>
+    </g>
+    <!-- stripes -->
+    <g stroke="#e0863a" stroke-width="4" fill="none" stroke-linecap="round">
+      <path d="M 460 455 q 10 5 8 16"/>
+      <path d="M 560 455 q -10 5 -8 16"/>
+      <path d="M 498 355 q 5 -8 12 -10"/>
+    </g>
+    <!-- blush -->
+    <ellipse cx="481" cy="402" rx="8" ry="5" fill="#ff9eb0" opacity="0.7"/>
+    <ellipse cx="539" cy="402" rx="8" ry="5" fill="#ff9eb0" opacity="0.7"/>
+  </g>
+
+  <!-- little hearts between boy and cat -->
+  <g filter="url(#crayon2)" fill="#ff6b81" stroke="#e63956" stroke-width="2.5">
+    <path d="M 447 330 c -4 -6 -13 -3 -12 4 c 1 5 12 12 12 12 c 0 0 11 -7 12 -12 c 1 -7 -8 -10 -12 -4 z"/>
+    <path d="M 478 295 c -3 -5 -11 -3 -10 3 c 1 4 10 10 10 10 c 0 0 9 -6 10 -10 c 1 -6 -7 -8 -10 -3 z"/>
+  </g>
+
+  <!-- child's signature scribble -->
+  <g filter="url(#crayon2)">
+    <path d="M 640 575 q 6 -12 10 0 q 4 -12 9 0 M 668 566 l 0 10 M 676 566 q 8 -3 8 5 q 0 8 -8 5 z" fill="none" stroke="#e63956" stroke-width="3" stroke-linecap="round"/>
+    <path d="M 700 562 l 4 9 9 1 -7 6 2 9 -8 -5 -8 5 2 -9 -7 -6 9 -1 z" fill="#ffd60a" stroke="#f0a500" stroke-width="2.5" stroke-linejoin="round"/>
+  </g>
+</svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:16px;">
+    <div class="panel-title">Prompt used (same for all models)</div>
+    <div class="code-block">System: You are an expert SVG artist. Output ONLY valid SVG code. Self-contained, no external resources.
+
+User: Create a complete SVG image of a boy with a cat in a crayon art style.
+- Look like a painting drawn with crayons by a 10-year-old child
+- Rough, wobbly lines (feTurbulence + feDisplacementMap)
+- Big heads, simple features, stick-like limbs
+- White paper background with slight texture
+- Bright, childlike colors (primary + pastels)
+- Cute decorations: flowers, stars, clouds, candy, hearts
+- Boy smiling, standing next to cat
+- Cat: round body, triangle ears, whiskers
+- Canvas: 800×600px</div>
+  </div>
+
+  <div class="panel" style="margin-top:16px;">
+    <div class="panel-title">Pricing reference (Bedrock on-demand, per 1M tokens)</div>
+    <div style="overflow-x:auto;">
+    <table class="ctable">
+      <thead><tr><th>Model</th><th>Input</th><th>Output</th><th>Context</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Opus 4.6 / 4.8</td><td class="num">$5</td><td class="num">$25</td><td>200K</td><td>Standard inference profiles</td></tr>
+        <tr><td>Sonnet 5</td><td class="num">$3</td><td class="num">$15</td><td>200K</td><td>Best cost, weakest visual result here</td></tr>
+        <tr><td>Fable 5</td><td class="num">$10</td><td class="num">$50</td><td>1M</td><td>Requires provider_data_share (30-day retention)</td></tr>
+        <tr style="background:var(--accent-tint);"><td><b>DALL-E 3 HD (comparison)</b></td><td colspan="2" class="num">$0.08 flat</td><td>—</td><td>Non-editable PNG, ~15s, better artistic quality</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="insight"><b>Key takeaway:</b> Programmatic SVG generation via LLMs costs $0.09–$0.38/image (comparable to diffusion models) but produces editable, scalable, version-controllable output. Trade-off: 3–5× slower, lower artistic quality for illustrations — but superior for diagrams, charts, and anything requiring post-generation editing.</div>
+  </div>
+
+  <div class="panel" style="margin-top:24px;">
+    <div class="panel-title">Method 2: PIL crayon library (code generates scene script → executes → PNG)</div>
+    <p style="font-size:13px; color:var(--muted); margin-bottom:16px;">Same models, different approach: each model writes a Python script using a custom crayon.py PIL library that simulates wax crayon on paper. The script is then executed locally to produce the PNG. Much more realistic crayon texture than SVG filters.</p>
+    <div style="overflow-x:auto;">
+    <table class="ctable">
+      <thead><tr><th>Model</th><th>Gen time</th><th>Exec time</th><th>Total</th><th>Cost</th><th>Quality</th></tr></thead>
+      <tbody>
+        <tr><td><b>Claude Opus 4.6</b></td><td class="num">25.2s</td><td class="num">2.6s</td><td class="num">27.8s</td><td class="num">$0.064</td><td><span class="badge badge-ok">Cleanest composition</span></td></tr>
+        <tr><td><b>Claude Opus 4.8</b></td><td class="num">26.5s</td><td class="num">1.5s</td><td class="num">28.0s</td><td class="num">$0.080</td><td><span class="badge badge-ok">Best cat, odd head shape</span></td></tr>
+        <tr><td><b>Claude Sonnet 5</b></td><td class="num">51.3s</td><td class="num">8.8s</td><td class="num">60.1s</td><td class="num">$0.051</td><td><span class="badge badge-warn">Detailed but hair block issue</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="insight"><b>PIL approach is cheaper and faster</b> ($0.05–0.08 vs $0.09–0.38) because the model writes a short script (~100 lines) rather than a full SVG. The crayon texture simulation is convincing (wax grain, paper feel), but <b>the visual results are weak</b> — models struggle with coordinate-based figure drawing, producing deformed heads, misplaced hair, and awkward proportions. The skill needs a human refinement pass to look good.</div>
+  </div>
+
+  <div class="split" style="grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top:16px;">
+    <div class="panel" style="padding:12px;">
+      <div class="panel-title">Opus 4.6 — $0.064 / 28s</div>
+      <img src="crayon-skill-opus46.png" style="width:100%; border-radius:4px;">
+    </div>
+    <div class="panel" style="padding:12px;">
+      <div class="panel-title">Opus 4.8 — $0.080 / 28s</div>
+      <img src="crayon-skill-opus48.png" style="width:100%; border-radius:4px;">
+    </div>
+    <div class="panel" style="padding:12px;">
+      <div class="panel-title">Sonnet 5 — $0.051 / 60s</div>
+      <img src="crayon-skill-sonnet5.png" style="width:100%; border-radius:4px;">
+    </div>
+    <div class="panel" style="padding:12px;">
+      <div class="panel-title">Fable 5 — $0.170 / 39s</div>
+      <img src="crayon-skill-fable5.png" style="width:100%; border-radius:4px;">
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:16px;">
+    <div class="panel-title">Reference: Same prompt via ChatGPT image generation (diffusion model)</div>
+    <div class="svg-preview" style="min-height:300px; padding:16px; background:#fff;">
+      <img src="chatgpt-crayon-reference.png" alt="ChatGPT generated crayon art - boy with cat" style="width:100%; max-width:600px; height:auto; border-radius:4px;">
+    </div>
+    <div class="insight"><b>The quality gap is clear.</b> The diffusion model produces photorealistic crayon texture, natural color blending, and hand-drawn warmth that SVG filters cannot replicate. Cost: ~$0.04 (GPT Image). Time: ~12s. But: the output is a flat PNG — not editable, not scalable, not version-controllable.</div>
+  </div>
+</section>
+
+<section id="tools">
+  <div class="s-head">
+    <div class="s-kicker">Reference</div>
+    <h2 class="s-title">The full toolkit landscape</h2>
+    <p class="s-desc">Every tool that fits the "LLM writes code → visual output" paradigm, plus the hybrid and diffusion approaches for comparison.</p>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Programmatic generation (LLM → code → render)</div>
+    <div style="overflow-x:auto;">
+    <table class="ctable">
+      <thead><tr><th>Tool / Format</th><th>Output</th><th>Best for</th><th>Link</th></tr></thead>
+      <tbody>
+        <tr><td><b>SVG (raw)</b></td><td>Vector image</td><td>Icons, diagrams, illustrations, charts</td><td>Native browser</td></tr>
+        <tr><td><b>HTML/CSS</b></td><td>Screenshots, cards</td><td>Social cards, OG images, dashboards</td><td>Puppeteer / Playwright</td></tr>
+        <tr><td><b>Matplotlib / Seaborn</b></td><td>PNG/SVG charts</td><td>Data visualization, scientific plots</td><td><a href="https://matplotlib.org" target="_blank" style="color:var(--accent);">matplotlib.org</a></td></tr>
+        <tr><td><b>Mermaid</b></td><td>SVG diagrams</td><td>Flowcharts, sequences, ER diagrams, Gantt</td><td><a href="https://mermaid.js.org" target="_blank" style="color:var(--accent);">mermaid.js.org</a></td></tr>
+        <tr><td><b>D2</b></td><td>SVG diagrams</td><td>Architecture, infrastructure diagrams</td><td><a href="https://d2lang.com" target="_blank" style="color:var(--accent);">d2lang.com</a></td></tr>
+        <tr><td><b>PlantUML</b></td><td>SVG/PNG</td><td>UML, sequence, component diagrams</td><td><a href="https://plantuml.com" target="_blank" style="color:var(--accent);">plantuml.com</a></td></tr>
+        <tr><td><b>draw.io XML</b></td><td>.drawio (editable)</td><td>AWS architecture, network, system design</td><td><a href="https://github.com/vidanov/aws-architecture-diagram-skill" target="_blank" style="color:var(--accent);">aws-arch-diagram-skill</a></td></tr>
+        <tr><td><b>p5.js</b></td><td>Canvas / SVG</td><td>Generative art, animations, data art</td><td><a href="https://p5js.org" target="_blank" style="color:var(--accent);">p5js.org</a></td></tr>
+        <tr><td><b>Three.js</b></td><td>WebGL / 3D</td><td>3D product views, scene renders</td><td><a href="https://threejs.org" target="_blank" style="color:var(--accent);">threejs.org</a></td></tr>
+        <tr><td><b>TikZ / LaTeX</b></td><td>PDF/SVG</td><td>Academic figures, math diagrams</td><td>TeX distributions</td></tr>
+        <tr><td><b>Excalidraw</b></td><td>SVG (hand-drawn look)</td><td>Whiteboards, sketchy diagrams</td><td><a href="https://excalidraw.com" target="_blank" style="color:var(--accent);">excalidraw.com</a></td></tr>
+        <tr><td><b>Reveal.js</b></td><td>HTML slides</td><td>Presentations, decks, speaker notes</td><td><a href="https://revealjs.com" target="_blank" style="color:var(--accent);">revealjs.com</a></td></tr>
+        <tr><td><b>Remotion</b></td><td>MP4 video</td><td>Animated explainers, data videos, social clips</td><td><a href="https://remotion.dev" target="_blank" style="color:var(--accent);">remotion.dev</a></td></tr>
+        <tr><td><b>Motion Canvas</b></td><td>MP4 video</td><td>Code-driven animations, manim alternative</td><td><a href="https://motioncanvas.io" target="_blank" style="color:var(--accent);">motioncanvas.io</a></td></tr>
+        <tr><td><b>Manim</b></td><td>MP4 video</td><td>Math animations (3Blue1Brown style)</td><td><a href="https://www.manim.community" target="_blank" style="color:var(--accent);">manim.community</a></td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Hybrid approaches (code + diffusion / retrieval)</div>
+    <div style="overflow-x:auto;">
+    <table class="ctable">
+      <thead><tr><th>Tool / Paper</th><th>Approach</th><th>Output</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr style="background:var(--accent-tint);"><td><b>GenClaw</b></td><td>Agentic: Conceptualize → Sketch (code) → Color (diffusion)</td><td>PNG (photorealistic + accurate text)</td><td><a href="https://arxiv.org/abs/2605.30248" target="_blank" style="color:var(--accent);">arXiv May 2026</a></td></tr>
+        <tr><td><b>Unsplash + LLM overlay</b></td><td>Free photo API + code-generated text/data overlay</td><td>Composite image</td><td>Production-ready</td></tr>
+        <tr><td><b>Vercel OG</b></td><td>JSX → image at the edge (Satori engine)</td><td>PNG (social cards)</td><td><a href="https://vercel.com/docs/og-image-generation" target="_blank" style="color:var(--accent);">vercel.com/docs</a></td></tr>
+        <tr><td><b>Satori</b></td><td>HTML/CSS subset → SVG (no browser needed)</td><td>SVG</td><td><a href="https://github.com/vercel/satori" target="_blank" style="color:var(--accent);">github/vercel/satori</a></td></tr>
+        <tr><td><b>Puppeteer / Playwright</b></td><td>HTML → screenshot (headless browser)</td><td>PNG/PDF</td><td>Production-ready</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Diffusion / traditional (for comparison)</div>
+    <div style="overflow-x:auto;">
+    <table class="ctable">
+      <thead><tr><th>Service</th><th>Cost/image</th><th>Text quality</th><th>Editable</th><th>Best for</th></tr></thead>
+      <tbody>
+        <tr><td>GPT Image 1.5 (OpenAI)</td><td class="num">$0.009–0.20</td><td><span class="badge badge-ok">Good</span></td><td>No</td><td>Flagship, editing, prompt adherence</td></tr>
+        <tr><td>gpt-image-1-mini (OpenAI)</td><td class="num">$0.005–0.05</td><td><span class="badge badge-ok">Good</span></td><td>No</td><td>Budget, prototyping, volume</td></tr>
+        <tr><td>Nano Banana 2 (Google)</td><td class="num">$0.045–0.15</td><td><span class="badge badge-ok">Good</span></td><td>No</td><td>Price-performance, Gemini ecosystem</td></tr>
+        <tr><td>Nano Banana 2 Lite (Google)</td><td class="num">$0.017–0.08</td><td><span class="badge badge-ok">Good</span></td><td>No</td><td>Budget tier, batch workflows</td></tr>
+        <tr><td>Midjourney v7</td><td class="num">$0.08–0.20</td><td><span class="badge badge-ok">Good</span></td><td>No</td><td>Artistic, stylized</td></tr>
+        <tr><td>Flux (Black Forest Labs)</td><td class="num">$0.01–0.05</td><td><span class="badge badge-ok">Good</span></td><td>No</td><td>Fast, open-weight</td></tr>
+        <tr><td>Ideogram 3</td><td class="num">$0.02–0.08</td><td><span class="badge badge-ok">Best</span></td><td>No</td><td>Text-heavy images, logos</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Research & benchmarks</div>
+    <div style="overflow-x:auto;">
+    <table class="ctable">
+      <thead><tr><th>Paper / Resource</th><th>Finding</th><th>Date</th></tr></thead>
+      <tbody>
+        <tr><td><a href="https://arxiv.org/abs/2605.30248" target="_blank" style="color:var(--accent);">GenClaw (arXiv:2605.30248)</a></td><td>Code-driven agentic generation scores 0.878 compositional accuracy vs GPT-Image 0.832</td><td>May 2026</td></tr>
+        <tr><td><a href="https://arxiv.org/abs/2412.04468" target="_blank" style="color:var(--accent);">SVG Generation Benchmark</a></td><td>Claude best at abstract instructions, Gemini cleanest code, GPT most creative</td><td>Dec 2025</td></tr>
+        <tr><td>LLM Cost at Scale</td><td>Flash-tier models (Gemini Flash, Haiku) achieve $0.0003–$0.001/image for SVG generation</td><td>2025–2026</td></tr>
+        <tr><td>Text Rendering Comparison</td><td>Code-based approaches achieve 100% text accuracy vs 60–85% for diffusion models</td><td>Ongoing</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</section>
+
+
+
+
+
+<div style="text-align:center;padding:32px 0;border-top:1px solid var(--line);margin-top:40px;">
+  <p style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.5px;">
+    EVERY VISUAL ON THIS PAGE WAS PRODUCED BY CODE. NO DIFFUSION MODEL WAS CALLED. NO PIXEL WAS GUESSED.
+  </p>
+</div>
+
+</div><!-- .wrap -->
+
+<script>
+// === HERO ANIMATION ===
+(function initHero() {
+  // Particles
+  const container = document.getElementById('heroParticles');
+  for (let i = 0; i < 20; i++) {
+    const p = document.createElement('div');
+    p.className = 'hero-particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.top = Math.random() * 100 + '%';
+    p.style.setProperty('--dx', (Math.random() * 40 - 20) + 'px');
+    p.style.setProperty('--dy', (Math.random() * 40 - 20) + 'px');
+    p.style.animationDelay = (Math.random() * 4) + 's';
+    p.style.animationDuration = (3 + Math.random() * 3) + 's';
+    container.appendChild(p);
+  }
+
+  // Counter animations
+  function animateCounter(el, target, suffix, duration) {
+    const start = 0;
+    const startTime = performance.now();
+    function update(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.round(start + (target - start) * eased);
+      el.textContent = current + suffix;
+      if (progress < 1) requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+  }
+  setTimeout(() => animateCounter(document.getElementById('heroCounter1'), 600, '×', 2000), 500);
+  setTimeout(() => animateCounter(document.getElementById('heroCounter2'), 0, 'ms', 1500), 800);
+})();
+
+// === COST CALCULATOR ===
+const volSlider = document.getElementById('volumeSlider');
+volSlider.addEventListener('input', updateCosts);
+function updateCosts() {
+  const v = parseInt(volSlider.value);
+  document.getElementById('volumeVal').textContent = v.toLocaleString();
+  const dalle=v*0.034, sd=v*0.067, son=v*0.011, fl=v*0.0006, un=v*0.003;
+  const maxCost = Math.max(dalle, sd);
+  document.getElementById('dalleLabel').textContent = '$'+dalle.toFixed(dalle<10?2:0);
+  document.getElementById('sdLabel').textContent = '$'+sd.toFixed(sd<10?2:0);
+  document.getElementById('sonnetLabel').textContent = '$'+son.toFixed(son<10?2:0);
+  document.getElementById('flashLabel').textContent = '$'+fl.toFixed(2);
+  document.getElementById('unsplashLabel').textContent = '$'+un.toFixed(2);
+  document.getElementById('dalleBar').style.width = (dalle/maxCost*100)+'%';
+  document.getElementById('sdBar').style.width = (sd/maxCost*100)+'%';
+  document.getElementById('sonnetBar').style.width = (son/maxCost*100)+'%';
+  document.getElementById('flashBar').style.width = Math.max(0.8,fl/maxCost*100)+'%';
+  document.getElementById('unsplashBar').style.width = Math.max(1.5,un/maxCost*100)+'%';
+  document.getElementById('savingsVolume').textContent = v.toLocaleString();
+  document.getElementById('savingsAmount').textContent = '$'+(dalle-fl).toFixed(2);
+  document.getElementById('savingsMultiplier').textContent = Math.round(dalle/fl)+'x';
+}
+
+// === LIVE DEMO TABS ===
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('tab-'+t.dataset.tab).classList.add('active');
+    updatePreview();
+  });
+});
+
+// === SVG GENERATORS ===
+function genChart(){
+  const n=parseInt(document.getElementById('dataPoints').value);
+  const mx=parseInt(document.getElementById('maxVal').value);
+  const barGap=parseInt(document.getElementById('chartGap').value);
+  const seed=parseInt(document.getElementById('chartSeed').value);
+  const showFrame=document.getElementById('chartFrame').checked;
+  const activeBtn=document.querySelector('.chart-palette-btn.active');
+  const accent=activeBtn?activeBtn.dataset.accent:'#7A2E2E';
+  // Editorial "Subtractive Craft" style chart
+  const W=680, H=452;
+  const paper='#ECEAE4', ink='#1C1811', gray='#6F675A', line='#D2C9B8';
+  const chartL=88, chartR=600, chartT=112, chartB=352;
+  const chartW=chartR-chartL, chartH=chartB-chartT;
+  const barW=Math.floor((chartW - (n-1)*barGap) / n);
+
+  // Seeded random for reproducibility
+  let s=seed;
+  function seededRand(){s=(s*1664525+1013904223)&0xFFFFFFFF;return(s>>>0)/0xFFFFFFFF;}
+
+  let bars='';
+  for(let i=0;i<n;i++){
+    const val=20+seededRand()*(mx-20);
+    const bh=(val/mx)*chartH;
+    const x=chartL + i*(barW+barGap);
+    const y=chartB - bh;
+    const op=(0.5+val/mx*0.5).toFixed(2);
+    bars+=`<rect x="${x}" y="${y}" width="${barW}" height="${bh}" fill="${accent}" opacity="${op}" rx="1.5"/>`;
+  }
+
+  // Grid lines
+  const midVal=Math.round(mx/2);
+  const midY=chartB - chartH/2;
+
+  // Frame (optional)
+  const frame = showFrame ? `<rect x="24" y="24" width="632" height="404" fill="none" stroke="${ink}" stroke-width="1.3"/>
+<line x1="37" y1="46" x2="55" y2="46" stroke="${ink}" stroke-width="1"/><line x1="46" y1="37" x2="46" y2="55" stroke="${ink}" stroke-width="1"/>
+<line x1="625" y1="46" x2="643" y2="46" stroke="${ink}" stroke-width="1"/><line x1="634" y1="37" x2="634" y2="55" stroke="${ink}" stroke-width="1"/>
+<line x1="37" y1="406" x2="55" y2="406" stroke="${ink}" stroke-width="1"/><line x1="46" y1="397" x2="46" y2="415" stroke="${ink}" stroke-width="1"/>
+<line x1="625" y1="406" x2="643" y2="406" stroke="${ink}" stroke-width="1"/><line x1="634" y1="397" x2="634" y2="415" stroke="${ink}" stroke-width="1"/>
+<text x="64" y="54" font-family="ui-monospace,monospace" font-size="13" letter-spacing="3" fill="${ink}">FIG. 02</text>
+<text x="616" y="54" font-family="ui-monospace,monospace" font-size="13" letter-spacing="2" fill="${gray}" text-anchor="end">Nº 02 / V</text>
+<line x1="64" y1="382" x2="616" y2="382" stroke="${ink}" stroke-width="0.7"/>
+<text x="64" y="404" font-family="ui-monospace,monospace" font-size="14" letter-spacing="4" fill="${ink}">PARAMETERIZED SVG</text>
+<text x="616" y="404" font-family="ui-monospace,monospace" font-size="11" letter-spacing="1.5" fill="${gray}" text-anchor="end">bars=${n} max=${mx} gap=${barGap}</text>` : '';
+
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg">
+<rect width="${W}" height="${H}" fill="${paper}"/>
+${frame}
+<text x="344" y="102" font-family="ui-monospace,monospace" font-size="11" letter-spacing="1.5" fill="${gray}" text-anchor="middle">${n} DATA POINTS · MAX ${mx}</text>
+<line x1="${chartL}" y1="${chartB}" x2="${chartR}" y2="${chartB}" stroke="${line}" stroke-width="1.4"/>
+<line x1="${chartL}" y1="${chartT}" x2="${chartL}" y2="${chartB}" stroke="${line}" stroke-width="1.4"/>
+<line x1="${chartL}" y1="${chartB}" x2="${chartR}" y2="${chartB}" stroke="${line}" stroke-width="0.7" opacity="0.6"/>
+<text x="80" y="${chartB+4}" font-family="ui-monospace,monospace" font-size="9" fill="${gray}" text-anchor="end">0</text>
+<line x1="${chartL}" y1="${midY}" x2="${chartR}" y2="${midY}" stroke="${line}" stroke-width="0.7" opacity="0.6"/>
+<text x="80" y="${midY+4}" font-family="ui-monospace,monospace" font-size="9" fill="${gray}" text-anchor="end">${midVal}</text>
+<line x1="${chartL}" y1="${chartT}" x2="${chartR}" y2="${chartT}" stroke="${line}" stroke-width="0.7" opacity="0.6"/>
+<text x="80" y="${chartT+4}" font-family="ui-monospace,monospace" font-size="9" fill="${gray}" text-anchor="end">${mx}</text>
+${bars}
+</svg>`;
+}
+
+function genCard(){
+  const s=parseFloat(document.getElementById('statVal').value).toFixed(1);
+  const tr=parseFloat(document.getElementById('trendVal').value).toFixed(1);
+  const sign=tr>=0?'+':'';
+  const col=tr>=0?'#16a34a':'#dc2626';
+  const arr=tr>=0?'▲':'▼';
+  const lineCol = tr>=0 ? '#16a34a' : '#dc2626';
+  let pts=''; const baseY=180;
+  const slope = tr >= 0 ? -4 : 4;
+  for(let i=0;i<12;i++){pts+=`${40+i*55},${baseY+i*slope+Math.random()*10-5} `;}
+  return `<svg viewBox="0 0 680 260" width="100%" xmlns="http://www.w3.org/2000/svg">
+<rect width="680" height="260" fill="#ECEAE4" rx="4"/>
+<rect x="24" y="24" width="632" height="212" fill="white" stroke="#D2C9B8" stroke-width="1"/>
+<text x="48" y="60" font-family="ui-monospace,monospace" font-size="13" fill="#6F675A" letter-spacing="2">SYSTEM UPTIME</text>
+<text x="48" y="120" font-family="Helvetica Neue,sans-serif" font-size="56" fill="#1C1811" font-weight="700">${s}%</text>
+<text x="48" y="155" font-family="ui-monospace,monospace" font-size="13" fill="${col}">${arr} ${sign}${tr}% from last month</text>
+<polyline points="${pts.trim()}" fill="none" stroke="${lineCol}" stroke-width="2.5" stroke-linecap="round"/>
+</svg>`;
+}
+
+function updatePreview(){
+  const active=document.querySelector('.tab.active').dataset.tab;
+  let svg, tokens;
+  if(active==='chart'){svg=genChart();tokens='~1,000 tok ≈ $0.0003';}
+  else{svg=genCard();tokens='~600 tok ≈ $0.0002';}
+  document.getElementById('svgOutput').innerHTML=svg;
+  document.getElementById('tokenCost').textContent=tokens;
+  const clean=svg.replace(/\n\n/g,'\n').trim();
+  const lines=clean.split('\n');
+  const show=lines.length>12?lines.slice(0,12).join('\n')+'\n  ... ('+lines.length+' lines total)':clean;
+  document.getElementById('codeOutput').textContent=show;
+}
+
+// === SLIDER SYNC ===
+function syncSliders(){
+  document.getElementById('dataPointsVal').textContent=document.getElementById('dataPoints').value;
+  document.getElementById('maxValVal').textContent=document.getElementById('maxVal').value;
+  document.getElementById('chartGapVal').textContent=document.getElementById('chartGap').value;
+  document.getElementById('chartSeedVal').textContent=document.getElementById('chartSeed').value;
+  document.getElementById('statValVal').textContent=parseFloat(document.getElementById('statVal').value).toFixed(1)+'%';
+  const tv=parseFloat(document.getElementById('trendVal').value);
+  document.getElementById('trendValVal').textContent=(tv>=0?'+':'')+tv.toFixed(1)+'%';
+}
+document.querySelectorAll('input[type="range"]').forEach(s=>{
+  s.addEventListener('input',()=>{syncSliders();updatePreview();});
+});
+document.getElementById('chartFrame').addEventListener('change',()=>updatePreview());
+
+// Chart palette selector
+document.querySelectorAll('.chart-palette-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.chart-palette-btn').forEach(b=>b.style.borderColor='transparent');
+    btn.style.borderColor='var(--ink)';
+    document.querySelectorAll('.chart-palette-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    updatePreview();
+  });
+});
+
+// === VARIATION TABS (Hybrid section) ===
+document.querySelectorAll('.variation-tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.variation-tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.variation-content').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('var-'+t.dataset.var).classList.add('active');
+  });
+});
+
+// === GALLERY LIGHTBOX ===
+const galleryItems = document.querySelectorAll('.gallery-item');
+const lightbox = document.getElementById('galleryLightbox');
+const lightboxImg = document.getElementById('lightboxImg');
+const lightboxCaption = document.getElementById('lightboxCaption');
+const galleryCaptions = [
+  'I · The Sculptor — "AI generates the stone. Craft reveals the form."',
+  'III · AI Fingerprints — "Every model leaves the same prints."',
+  'IV · The Leaking Bucket — "What leaks away costs more than what remains."',
+  'VIII · The Cascade — "Each sentence topples into the next."',
+  'IX · The Iceberg — "The reader only needs the tip."',
+  'X · Show, Don\'t Tell — "Same event — one reports, one lets you feel it."'
+];
+galleryItems.forEach(item => {
+  item.addEventListener('click', () => {
+    const obj = item.querySelector('object');
+    const src = obj ? obj.getAttribute('data') : '';
+    lightboxImg.src = src;
+    lightboxCaption.textContent = galleryCaptions[parseInt(item.dataset.idx)];
+    lightbox.style.display = 'block';
+  });
+});
+
+// === INIT ===
+updatePreview();
+updateCosts();
+
+// === GENERATIVE ART CANVAS ===
+let genArtSeed = 1;
+function renderGenArt() {
+  const canvas = document.getElementById('genCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  document.getElementById('genSeedVal').textContent = genArtSeed;
+
+  let s = genArtSeed;
+  const rand = () => { s = (s * 1664525 + 1013904223) & 0xFFFFFFFF; return (s >>> 0) / 0xFFFFFFFF; };
+
+  // Background
+  ctx.fillStyle = '#0a0f0d';
+  ctx.fillRect(0, 0, W, H);
+
+  // Subtle grid
+  ctx.strokeStyle = 'rgba(34,197,94,0.05)';
+  ctx.lineWidth = 0.5;
+  for (let x = 0; x < W; x += 30) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+  for (let y = 0; y < H; y += 30) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+
+  // Particle field
+  for (let i = 0; i < 200; i++) {
+    const x = rand() * W, y = rand() * H;
+    const r = 1 + rand() * 3;
+    const hue = 140 + rand() * 40;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = `hsla(${hue},70%,60%,${0.3 + rand() * 0.5})`;
+    ctx.fill();
+  }
+
+  // Flow lines
+  for (let i = 0; i < 12; i++) {
+    ctx.beginPath();
+    let x = rand() * W, y = rand() * H;
+    ctx.moveTo(x, y);
+    for (let j = 0; j < 25; j++) {
+      x += Math.cos(y * 0.01 + genArtSeed) * 8;
+      y += Math.sin(x * 0.01) * 8;
+      ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = `hsla(155,80%,50%,0.3)`;
+    ctx.lineWidth = 1 + rand() * 2;
+    ctx.stroke();
+  }
+
+  // Accent circles
+  for (let i = 0; i < 5; i++) {
+    const x = rand() * W, y = rand() * H, r = 20 + rand() * 40;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.strokeStyle = `hsla(${150 + rand() * 30},60%,50%,${0.1 + rand() * 0.2})`;
+    ctx.lineWidth = 1 + rand() * 2;
+    ctx.stroke();
+  }
+}
+renderGenArt();
+</script>
+</body>
+</html>

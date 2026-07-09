@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="800" height="400">
+  <defs>
+    <linearGradient id="cbBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#020617"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <filter id="cbGlow">
+      <feGaussianBlur stdDeviation="2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="cbGlow2">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="400" fill="url(#cbBg)"/>
+
+  <!-- Grid pattern -->
+  <g stroke="#1e293b" stroke-width="0.5" opacity="0.4">
+    <line x1="0" y1="50" x2="800" y2="50"/><line x1="0" y1="100" x2="800" y2="100"/>
+    <line x1="0" y1="150" x2="800" y2="150"/><line x1="0" y1="200" x2="800" y2="200"/>
+    <line x1="0" y1="250" x2="800" y2="250"/><line x1="0" y1="300" x2="800" y2="300"/>
+    <line x1="0" y1="350" x2="800" y2="350"/>
+    <line x1="50" y1="0" x2="50" y2="400"/><line x1="100" y1="0" x2="100" y2="400"/>
+    <line x1="150" y1="0" x2="150" y2="400"/><line x1="200" y1="0" x2="200" y2="400"/>
+    <line x1="250" y1="0" x2="250" y2="400"/><line x1="300" y1="0" x2="300" y2="400"/>
+    <line x1="350" y1="0" x2="350" y2="400"/><line x1="400" y1="0" x2="400" y2="400"/>
+    <line x1="450" y1="0" x2="450" y2="400"/><line x1="500" y1="0" x2="500" y2="400"/>
+    <line x1="550" y1="0" x2="550" y2="400"/><line x1="600" y1="0" x2="600" y2="400"/>
+    <line x1="650" y1="0" x2="650" y2="400"/><line x1="700" y1="0" x2="700" y2="400"/>
+    <line x1="750" y1="0" x2="750" y2="400"/>
+  </g>
+
+  <!-- Circuit traces -->
+  <g stroke="#22c55e" stroke-width="2" fill="none" opacity="0.3" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Horizontal traces -->
+    <path d="M50,100 L150,100 L150,150 L300,150"/>
+    <path d="M300,150 L350,150 L350,200 L500,200"/>
+    <path d="M500,200 L550,200 L550,150 L700,150"/>
+    <path d="M100,250 L200,250 L200,300 L350,300"/>
+    <path d="M350,300 L400,300 L400,250 L550,250"/>
+    <path d="M550,250 L600,250 L600,300 L750,300"/>
+    <!-- Vertical traces -->
+    <path d="M200,50 L200,100 L250,100 L250,200"/>
+    <path d="M400,50 L400,100 L450,100 L450,150"/>
+    <path d="M600,50 L600,100 L650,100 L650,200"/>
+    <path d="M150,250 L150,350 L200,350"/>
+    <path d="M400,250 L400,350 L450,350"/>
+    <path d="M650,200 L650,350 L700,350"/>
+  </g>
+
+  <!-- Animated signal pulses along traces -->
+  <g filter="url(#cbGlow)">
+    <circle r="3" fill="#22c55e" opacity="0.9">
+      <animateMotion dur="3s" repeatCount="indefinite" path="M50,100 L150,100 L150,150 L300,150 L350,150 L350,200 L500,200"/>
+    </circle>
+    <circle r="3" fill="#4ade80" opacity="0.9">
+      <animateMotion dur="4s" repeatCount="indefinite" path="M100,250 L200,250 L200,300 L350,300 L400,300 L400,250 L550,250 L600,250 L600,300 L750,300"/>
+    </circle>
+    <circle r="2.5" fill="#22c55e" opacity="0.8">
+      <animateMotion dur="2.5s" begin="1s" repeatCount="indefinite" path="M500,200 L550,200 L550,150 L700,150"/>
+    </circle>
+    <circle r="2.5" fill="#86efac" opacity="0.7">
+      <animateMotion dur="3.5s" begin="0.5s" repeatCount="indefinite" path="M200,50 L200,100 L250,100 L250,200"/>
+    </circle>
+    <circle r="2.5" fill="#4ade80" opacity="0.8">
+      <animateMotion dur="2.8s" begin="1.5s" repeatCount="indefinite" path="M400,50 L400,100 L450,100 L450,150"/>
+    </circle>
+    <circle r="2" fill="#22c55e" opacity="0.7">
+      <animateMotion dur="3.2s" begin="0.8s" repeatCount="indefinite" path="M650,200 L650,350 L700,350"/>
+    </circle>
+  </g>
+
+  <!-- IC Chips / Components -->
+  <!-- Central processor -->
+  <g>
+    <rect x="350" y="150" width="100" height="100" fill="#0f172a" stroke="#22c55e" stroke-width="1.5" rx="4"/>
+    <rect x="360" y="160" width="80" height="80" fill="#020617" stroke="#1e3a5f" stroke-width="0.5" rx="2"/>
+    <!-- Chip pins -->
+    <g stroke="#22c55e" stroke-width="1.5">
+      <line x1="370" y1="150" x2="370" y2="142"/><line x1="385" y1="150" x2="385" y2="142"/>
+      <line x1="400" y1="150" x2="400" y2="142"/><line x1="415" y1="150" x2="415" y2="142"/>
+      <line x1="430" y1="150" x2="430" y2="142"/>
+      <line x1="370" y1="250" x2="370" y2="258"/><line x1="385" y1="250" x2="385" y2="258"/>
+      <line x1="400" y1="250" x2="400" y2="258"/><line x1="415" y1="250" x2="415" y2="258"/>
+      <line x1="430" y1="250" x2="430" y2="258"/>
+      <line x1="350" y1="170" x2="342" y2="170"/><line x1="350" y1="185" x2="342" y2="185"/>
+      <line x1="350" y1="200" x2="342" y2="200"/><line x1="350" y1="215" x2="342" y2="215"/>
+      <line x1="350" y1="230" x2="342" y2="230"/>
+      <line x1="450" y1="170" x2="458" y2="170"/><line x1="450" y1="185" x2="458" y2="185"/>
+      <line x1="450" y1="200" x2="458" y2="200"/><line x1="450" y1="215" x2="458" y2="215"/>
+      <line x1="450" y1="230" x2="458" y2="230"/>
+    </g>
+    <!-- Die markings -->
+    <text x="400" y="195" font-family="ui-monospace,monospace" font-size="8" fill="#22c55e" text-anchor="middle" opacity="0.7">LLM</text>
+    <text x="400" y="210" font-family="ui-monospace,monospace" font-size="7" fill="#6b8a74" text-anchor="middle" opacity="0.5">CORE</text>
+    <!-- Activity LED -->
+    <circle cx="370" cy="235" r="3" fill="#22c55e" opacity="0.8">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="0.8s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- Memory chip left -->
+  <g>
+    <rect x="100" y="80" width="60" height="40" fill="#0f172a" stroke="#6366f1" stroke-width="1" rx="2"/>
+    <text x="130" y="105" font-family="ui-monospace,monospace" font-size="7" fill="#6366f1" text-anchor="middle" opacity="0.7">RAM</text>
+    <circle cx="110" cy="90" r="2" fill="#6366f1"><animate attributeName="opacity" values="0.4;1;0.4" dur="1.5s" repeatCount="indefinite"/></circle>
+  </g>
+
+  <!-- Memory chip right -->
+  <g>
+    <rect x="640" y="130" width="60" height="40" fill="#0f172a" stroke="#6366f1" stroke-width="1" rx="2"/>
+    <text x="670" y="155" font-family="ui-monospace,monospace" font-size="7" fill="#6366f1" text-anchor="middle" opacity="0.7">VRAM</text>
+    <circle cx="650" cy="140" r="2" fill="#6366f1"><animate attributeName="opacity" values="0.5;1;0.5" dur="1.2s" repeatCount="indefinite"/></circle>
+  </g>
+
+  <!-- IO controller bottom -->
+  <g>
+    <rect x="350" y="300" width="80" height="50" fill="#0f172a" stroke="#f472b6" stroke-width="1" rx="2"/>
+    <text x="390" y="330" font-family="ui-monospace,monospace" font-size="7" fill="#f472b6" text-anchor="middle" opacity="0.7">RENDER</text>
+    <circle cx="360" cy="310" r="2" fill="#f472b6"><animate attributeName="opacity" values="0.4;1;0.4" dur="1.8s" repeatCount="indefinite"/></circle>
+  </g>
+
+  <!-- Capacitors / resistors -->
+  <g fill="none" stroke-width="1.5" opacity="0.5">
+    <rect x="248" y="195" width="8" height="12" stroke="#fbbf24" rx="1"/>
+    <rect x="545" y="195" width="8" height="12" stroke="#fbbf24" rx="1"/>
+    <rect x="195" y="295" width="8" height="12" stroke="#fbbf24" rx="1"/>
+    <rect x="548" y="245" width="8" height="12" stroke="#fbbf24" rx="1"/>
+  </g>
+
+  <!-- Via holes (circular pads) -->
+  <g fill="none" stroke="#334155" stroke-width="1">
+    <circle cx="300" cy="150" r="4"/><circle cx="300" cy="150" r="2" fill="#1e293b"/>
+    <circle cx="500" cy="200" r="4"/><circle cx="500" cy="200" r="2" fill="#1e293b"/>
+    <circle cx="200" cy="250" r="4"/><circle cx="200" cy="250" r="2" fill="#1e293b"/>
+    <circle cx="550" cy="250" r="4"/><circle cx="550" cy="250" r="2" fill="#1e293b"/>
+    <circle cx="700" cy="150" r="4"/><circle cx="700" cy="150" r="2" fill="#1e293b"/>
+    <circle cx="150" cy="350" r="4"/><circle cx="150" cy="350" r="2" fill="#1e293b"/>
+  </g>
+
+  <!-- Data bus (thicker, animated) -->
+  <g stroke="#22c55e" stroke-width="3" fill="none" opacity="0.2" stroke-dasharray="8 4">
+    <path d="M130,200 L342,200">
+      <animate attributeName="stroke-dashoffset" from="24" to="0" dur="1s" repeatCount="indefinite"/>
+    </path>
+    <path d="M458,200 L640,200">
+      <animate attributeName="stroke-dashoffset" from="24" to="0" dur="1s" repeatCount="indefinite"/>
+    </path>
+    <path d="M400,258 L400,300">
+      <animate attributeName="stroke-dashoffset" from="24" to="0" dur="0.8s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- Title and info -->
+  <text x="400" y="25" font-family="ui-monospace, monospace" font-size="11" fill="#e8f5ec" text-anchor="middle" letter-spacing="2" opacity="0.7">CIRCUIT · CODE AS CANVAS · BLOG HERO</text>
+  <text x="400" y="388" font-family="ui-monospace, monospace" font-size="9" fill="#6b8a74" text-anchor="middle" letter-spacing="1">Animated PCB visualization · ~2,200 tokens · $0.0009 · Aspect ratio: 2:1 (social card / blog hero)</text>
+</svg>

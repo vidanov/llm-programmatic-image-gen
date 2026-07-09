@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLM → Canvas: Particle Universe</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #000; overflow: hidden; }
+canvas { display: block; }
+#hud {
+  position: fixed; top: 20px; left: 20px; z-index: 10;
+  font-family: ui-monospace, monospace; color: #e8f5ec;
+  background: rgba(0,0,0,0.6); border: 1px solid rgba(34,197,94,0.3);
+  padding: 16px 20px; border-radius: 8px; backdrop-filter: blur(8px);
+}
+#hud h3 { font-size: 11px; letter-spacing: 2px; color: #22c55e; margin-bottom: 8px; text-transform: uppercase; }
+#hud p { font-size: 10px; color: #6b8a74; line-height: 1.6; margin-bottom: 4px; }
+#hud .val { color: #4ade80; font-weight: 700; }
+#controls {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 10;
+  font-family: ui-monospace, monospace; color: #6b8a74; font-size: 10px;
+  background: rgba(0,0,0,0.5); border: 1px solid rgba(34,197,94,0.2);
+  padding: 10px 20px; border-radius: 20px; backdrop-filter: blur(8px);
+  display: flex; gap: 24px; align-items: center;
+}
+#controls span { color: #22c55e; }
+</style>
+</head>
+<body>
+<div id="hud">
+  <h3>LLM → Canvas 2D</h3>
+  <p>Particles: <span class="val" id="particleCount">0</span></p>
+  <p>Galaxies: <span class="val">3</span></p>
+  <p>FPS: <span class="val" id="fps">60</span></p>
+  <p>Token cost: <span class="val">~2,400 tok · $0.001</span></p>
+  <p style="margin-top:8px;color:#4ade80;font-size:9px;">No WebGL. No library. Pure Canvas 2D.</p>
+</div>
+<div id="controls">
+  <span>Click</span> to create explosion &nbsp;|&nbsp; <span>Move</span> mouse to attract &nbsp;|&nbsp; <span>Scroll</span> to zoom
+</div>
+<canvas id="c"></canvas>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let W, H;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// Seeded random
+let seed = 42;
+function rand() { seed = (seed * 1664525 + 1013904223) & 0xFFFFFFFF; return (seed >>> 0) / 0xFFFFFFFF; }
+
+// Particle system
+const particles = [];
+const MAX_PARTICLES = 4000;
+let zoom = 1;
+let mouseX = W / 2, mouseY = H / 2;
+let mouseActive = false;
+
+class Particle {
+  constructor(x, y, vx, vy, color, size, life) {
+    this.x = x; this.y = y;
+    this.vx = vx; this.vy = vy;
+    this.color = color;
+    this.size = size;
+    this.life = life;
+    this.maxLife = life;
+    this.orbitRadius = 0;
+    this.orbitSpeed = 0;
+    this.orbitAngle = 0;
+    this.centerX = 0;
+    this.centerY = 0;
+  }
+}
+
+// Color palettes for galaxies
+const palettes = [
+  ['#22c55e', '#4ade80', '#86efac', '#bbf7d0', '#dcfce7'], // Green nebula
+  ['#6366f1', '#818cf8', '#a5b4fc', '#c7d2fe', '#e0e7ff'], // Purple cluster
+  ['#f472b6', '#fb7185', '#fda4af', '#fecdd3', '#ffe4e6'], // Pink nebula
+  ['#f59e0b', '#fbbf24', '#fcd34d', '#fde68a', '#fef3c7'], // Gold swarm
+  ['#06b6d4', '#22d3ee', '#67e8f9', '#a5f3fc', '#cffafe'], // Cyan stream
+];
+
+// Create galaxy cluster
+function createGalaxy(cx, cy, count, radius, palette, rotation) {
+  for (let i = 0; i < count; i++) {
+    const angle = rand() * Math.PI * 2;
+    const dist = rand() * radius;
+    // Spiral arm distribution
+    const arm = Math.floor(rand() * 3);
+    const armAngle = angle + (arm * Math.PI * 2 / 3) + dist * rotation * 0.003;
+    const spread = (1 - dist / radius) * 30 + rand() * 20;
+    
+    const x = cx + Math.cos(armAngle) * dist + (rand() - 0.5) * spread;
+    const y = cy + Math.sin(armAngle) * dist + (rand() - 0.5) * spread;
+    const color = palette[Math.floor(rand() * palette.length)];
+    const size = 0.5 + rand() * 2.5 * (1 - dist / radius);
+    const life = Infinity;
+    
+    const p = new Particle(x, y, 0, 0, color, size, life);
+    p.orbitRadius = dist;
+    p.orbitSpeed = (0.0003 + rand() * 0.001) * (radius / (dist + 50)) * rotation;
+    p.orbitAngle = armAngle;
+    p.centerX = cx;
+    p.centerY = cy;
+    particles.push(p);
+  }
+}
+
+// Create initial galaxies
+createGalaxy(W * 0.3, H * 0.4, 1200, 200, palettes[0], 1);
+createGalaxy(W * 0.7, H * 0.35, 800, 150, palettes[1], -1);
+createGalaxy(W * 0.5, H * 0.7, 600, 120, palettes[2], 1);
+
+// Explosion effect on click
+function createExplosion(x, y) {
+  const palette = palettes[Math.floor(Math.random() * palettes.length)];
+  const count = 150;
+  for (let i = 0; i < count && particles.length < MAX_PARTICLES; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 1 + Math.random() * 5;
+    const color = palette[Math.floor(Math.random() * palette.length)];
+    const size = 1 + Math.random() * 3;
+    const life = 60 + Math.random() * 120;
+    
+    const p = new Particle(x, y, Math.cos(angle) * speed, Math.sin(angle) * speed, color, size, life);
+    particles.push(p);
+  }
+}
+
+canvas.addEventListener('click', (e) => createExplosion(e.clientX, e.clientY));
+canvas.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; mouseActive = true; });
+canvas.addEventListener('mouseleave', () => { mouseActive = false; });
+canvas.addEventListener('wheel', (e) => {
+  zoom = Math.max(0.3, Math.min(3, zoom - e.deltaY * 0.001));
+  e.preventDefault();
+}, { passive: false });
+
+// Background stars
+const stars = [];
+for (let i = 0; i < 300; i++) {
+  stars.push({
+    x: Math.random() * 2000 - 500,
+    y: Math.random() * 1500 - 300,
+    size: Math.random() * 1.5,
+    twinkle: Math.random() * Math.PI * 2,
+    speed: 0.5 + Math.random() * 2,
+  });
+}
+
+// Animation
+let lastTime = performance.now();
+let frameCount = 0;
+let fpsDisplay = 60;
+
+function animate(time) {
+  requestAnimationFrame(animate);
+  
+  // FPS counter
+  frameCount++;
+  if (time - lastTime >= 1000) {
+    fpsDisplay = frameCount;
+    document.getElementById('fps').textContent = fpsDisplay;
+    frameCount = 0;
+    lastTime = time;
+  }
+  
+  // Clear with trail effect
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+  ctx.fillRect(0, 0, W, H);
+  
+  // Draw stars
+  const t = time * 0.001;
+  ctx.save();
+  for (const star of stars) {
+    const alpha = 0.3 + 0.7 * Math.abs(Math.sin(t * star.speed + star.twinkle));
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+  
+  // Update and draw particles
+  ctx.save();
+  // Apply zoom from center
+  ctx.translate(W / 2, H / 2);
+  ctx.scale(zoom, zoom);
+  ctx.translate(-W / 2, -H / 2);
+  
+  let alive = 0;
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    
+    if (p.life !== Infinity) {
+      p.life--;
+      if (p.life <= 0) { particles.splice(i, 1); continue; }
+      p.vx *= 0.98;
+      p.vy *= 0.98;
+      p.x += p.vx;
+      p.y += p.vy;
+    } else {
+      // Orbital motion for galaxy particles
+      p.orbitAngle += p.orbitSpeed;
+      p.x = p.centerX + Math.cos(p.orbitAngle) * p.orbitRadius;
+      p.y = p.centerY + Math.sin(p.orbitAngle) * p.orbitRadius;
+    }
+    
+    // Mouse attraction
+    if (mouseActive && p.life !== Infinity) {
+      const dx = mouseX - p.x;
+      const dy = mouseY - p.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 200 && dist > 5) {
+        const force = 0.5 / dist;
+        p.vx += dx * force;
+        p.vy += dy * force;
+      }
+    }
+    
+    // Draw
+    let alpha = 1;
+    if (p.life !== Infinity) {
+      alpha = p.life / p.maxLife;
+    }
+    
+    ctx.globalAlpha = alpha * 0.8;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size * (p.life === Infinity ? 1 : alpha), 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Glow for larger particles
+    if (p.size > 2) {
+      ctx.globalAlpha = alpha * 0.2;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
+    alive++;
+  }
+  ctx.restore();
+  
+  document.getElementById('particleCount').textContent = alive.toLocaleString();
+}
+
+animate(performance.now());
+</script>
+</body>
+</html>

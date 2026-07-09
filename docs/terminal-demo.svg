@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 260" width="700" height="260" role="img" aria-label="Terminal demo: LLM generates SVG for $0.0003">
+  <defs>
+    <style>
+      @media (prefers-reduced-motion: reduce) {
+        .term-line { opacity: 1 !important; }
+      }
+      .term-line { opacity: 0; animation: termFade 0.3s forwards; }
+      @keyframes termFade { to { opacity: 1; } }
+    </style>
+  </defs>
+
+  <!-- Terminal window -->
+  <rect width="700" height="260" rx="8" fill="#0d1117"/>
+  <rect width="700" height="260" rx="8" fill="none" stroke="#30363d" stroke-width="1"/>
+
+  <!-- Chrome bar -->
+  <rect width="700" height="32" rx="8" fill="#161b22"/>
+  <rect y="24" width="700" height="8" fill="#161b22"/>
+  <circle cx="18" cy="16" r="5" fill="#f85149"/>
+  <circle cx="36" cy="16" r="5" fill="#d29922"/>
+  <circle cx="54" cy="16" r="5" fill="#3fb950"/>
+  <text x="350" y="19" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="10" fill="#6b8a74" text-anchor="middle">~/project</text>
+
+  <!-- Terminal content -->
+  <g font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="12">
+    <text class="term-line" style="animation-delay:0.3s" x="20" y="60" fill="#8b949e"><tspan fill="#3fb950">$</tspan> prompt: <tspan fill="#a5d6ff">"cloud architecture diagram, 6 AWS services"</tspan></text>
+
+    <text class="term-line" style="animation-delay:1.0s" x="20" y="85" fill="#6b8a74">  reasoning... (0.6s)</text>
+    <text class="term-line" style="animation-delay:1.8s" x="20" y="110" fill="#6b8a74">  writing SVG... (1.4s)</text>
+
+    <text class="term-line" style="animation-delay:2.6s" x="20" y="140" fill="#8b949e"><tspan fill="#3fb950">done</tspan> 847 tokens, 2.0s</text>
+
+    <text class="term-line" style="animation-delay:3.2s" x="20" y="170" fill="#8b949e">  output: architecture.svg (1.2 KB)</text>
+    <text class="term-line" style="animation-delay:3.8s" x="20" y="195" fill="#8b949e">  cost:   <tspan fill="#3fb950" font-weight="700">$0.0003</tspan></text>
+    <text class="term-line" style="animation-delay:4.4s" x="20" y="220" fill="#8b949e">  status: <tspan fill="#3fb950">editable</tspan> | <tspan fill="#3fb950">scalable</tspan> | <tspan fill="#3fb950">deterministic</tspan></text>
+
+    <text class="term-line" style="animation-delay:5.0s" x="20" y="248" fill="#6b8a74">  vs GPT Image 1.5: $0.034 (113x more expensive, not editable)</text>
+  </g>
+</svg>

@@ -1,0 +1,211 @@
+<p align="center">
+  <img src="docs/hero-banner.svg" alt="Code as Canvas: LLM writes code, renderer produces image" width="800">
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/cost-$0.0003%2Fimage-16a34a?style=flat-square" alt="Cost per image">
+  <img src="https://img.shields.io/badge/renderers-8%20engines-4ade80?style=flat-square" alt="8 renderers supported">
+  <img src="https://img.shields.io/badge/diffusion-not%20needed-22c55e?style=flat-square" alt="No diffusion models">
+  <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="MIT License">
+</p>
+
+<p align="center">
+  <b>LLMs write rendering code. Existing engines produce the image. 100x cheaper than diffusion.</b>
+</p>
+
+<p align="center">
+  <a href="#quick-start">Quick start</a> · <a href="#the-renderer-spectrum">Renderer spectrum</a> · <a href="#examples">Examples</a> · <a href="#cost-comparison">Costs</a> · <a href="#live-demo">Live demo</a> · <a href="#articles">Articles</a>
+</p>
+
+<p align="center">
+  <img src="docs/terminal-demo.svg" alt="Terminal demo showing SVG generation" width="700">
+</p>
+
+## Why this exists
+
+Image generation APIs charge $0.02-0.20 per image. For diagrams, charts, illustrations, data visualizations, and even 3D scenes, that math never made sense. The LLM already knows how to write SVG, HTML Canvas, Three.js, Blender Python, and Godot scene files. The renderers already exist and cost nothing.
+
+This repo proves the thesis with working examples across the full renderer spectrum:
+
+- 🎯 **$0.0003/image for SVG**: one LLM call, browser renders for free
+- 🎨 **13-plate editorial series for $0.52**: consistent visual system from a style document
+- 📊 **Parameterized templates**: change data, not prompts. Infinite variants from one generation
+- 🏗️ **Architecture diagrams that open in draw.io**: 270+ verified AWS icon mappings
+- 🌐 **3D scenes for $0.001**: Three.js, Blender, Godot accept code input
+- 🎬 **Animated content**: SVG animations, Remotion video, Manim math explainers
+- ✅ **100% text accuracy**: code specifies text, never hallucinates it
+- 🔄 **Version-controllable**: every image is source code you can diff, branch, and merge
+
+## Quick start
+
+> **Prerequisites**: Any LLM API (Claude, GPT-4, Gemini). A browser.
+
+```bash
+# Clone and open any example
+git clone https://github.com/vidanov/llm-programmatic-image-gen.git
+cd llm-programmatic-image-gen
+
+# Open the interactive demo
+open examples/demo.html
+
+# Or open any standalone visual
+open examples/threejs-crystal-garden.html
+open examples/particle-universe.html
+```
+
+No build step. No dependencies. Every HTML file is self-contained.
+
+## The renderer spectrum
+
+Same pattern at every tier. LLM writes code, renderer produces the visual. Token cost grows linearly while capability grows exponentially.
+
+| Renderer | Tokens | Cost | Capability | Requires |
+|----------|--------|------|------------|----------|
+| **SVG** (browser) | ~800 | $0.0003 | 2D vector, animations | Browser |
+| **Canvas 2D** (browser) | ~2,400 | $0.001 | Particles, simulations | Browser |
+| **p5.js** (browser) | ~1,500 | $0.0006 | Creative/generative art | Browser |
+| **Three.js** (browser) | ~3,000 | $0.001 | 3D scenes, PBR, WebGL | Browser |
+| **Manim** (Python) | ~2,000 | $0.001 | Math animations, video | Python + ffmpeg |
+| **Godot** (.tscn) | ~2,500 | $0.001 | Game scenes, 2D/3D | Godot (free, MIT) |
+| **Blender** (Python) | ~5,000 | $0.002 | Photorealistic 3D | Blender CLI |
+| **Unreal Engine 5** | ~8,000 | $0.003 | AAA-grade real-time | UE5 Editor |
+
+Even Unreal Engine quality at $0.003 is 7-70x cheaper than GPT Image 1.5 at $0.02-0.20.
+
+## Examples
+
+| Example | What it shows | Tokens | Open |
+|---------|---------------|--------|------|
+| [Editorial illustrations](examples/editorial/) | 13-plate series, one style doc | ~1,200/plate | [SVGs](examples/editorial/) |
+| [Parameterized chart](examples/demo.html#live) | Drag sliders, SVG re-renders | ~1,000 | [Demo](https://labs.p.awsnavigator.com/code-as-canvas/demo.html#live) |
+| [Three.js crystal garden](examples/threejs-crystal-garden.html) | Interactive 3D, bloom, orbits | ~3,200 | [Live](https://labs.p.awsnavigator.com/code-as-canvas/threejs-crystal-garden.html) |
+| [Particle universe](examples/particle-universe.html) | Canvas 2D, 3 galaxies, 2600 particles | ~2,400 | [Live](https://labs.p.awsnavigator.com/code-as-canvas/particle-universe.html) |
+| [Neural network](examples/neural-network-viz.svg) | 4 layers, animated signals | ~2,800 | SVG |
+| [Isometric data center](examples/isometric-data-center.svg) | Server racks, data flows, LEDs | ~2,400 | SVG |
+| [Circuit board hero](examples/circuit-board-hero.svg) | Blog hero, animated signals | ~2,200 | SVG |
+| [Procedural landscape](examples/procedural-landscape.svg) | Parallax mountains, fireflies | ~1,600 | SVG |
+| [Flow field](examples/generative-flow-field.svg) | Self-drawing curves, particles | ~1,800 | SVG |
+| [Math animation](examples/manim-sine-wave.svg) | Sine wave with animated tracer | ~2,000 | SVG |
+| [AWS architecture](examples/demo.html#archdiagram) | draw.io, 270+ verified icons | ~850 | [Live](https://labs.p.awsnavigator.com/code-as-canvas/demo.html#archdiagram) |
+
+## Cost comparison
+
+At 10,000 images per month:
+
+| Method | Cost/image | Monthly total | Editable | Deterministic |
+|--------|-----------|---------------|----------|---------------|
+| GPT Image 1.5 | $0.034 | **$340** | No | No |
+| Nano Banana 2 (Google) | $0.067 | **$670** | No | No |
+| gpt-image-1-mini | $0.011 | **$110** | No | No |
+| **LLM to SVG (Flash)** | $0.0006 | **$6** | Yes | Yes |
+| **LLM to Three.js** | $0.001 | **$10** | Yes | Yes |
+| **LLM to Blender** | $0.002 | **$20** | Yes | Yes |
+
+The programmatic approach saves $330-660/month at this volume. At 100K images it saves $3,300-6,600/month.
+
+## Live demo
+
+The full interactive demo is deployed at:
+
+**[labs.p.awsnavigator.com/code-as-canvas](https://labs.p.awsnavigator.com/code-as-canvas/)**
+
+Includes: cost calculator, live SVG generation with sliders, editorial gallery, architecture diagrams, hybrid photo+overlay examples, game engine showcase with animated visuals, and model benchmarks.
+
+The [presentation](https://labs.p.awsnavigator.com/code-as-canvas/presentation.html) (Reveal.js) covers the full thesis with speaker notes.
+
+## Benchmarks
+
+Same prompt ("crayon-style illustration of a boy with a cat"), four Claude models on AWS Bedrock:
+
+| Model | Time | Tokens (in/out) | Cost | Quality |
+|-------|------|-----------------|------|---------|
+| Claude Opus 4.6 | 69.1s | 322 / 6,437 | $0.163 | Most complete scene |
+| Claude Opus 4.8 | 47.7s | 450 / 4,089 | $0.105 | Fastest, cleanest style |
+| Claude Sonnet 5 | 48.6s | 450 / 6,128 | $0.093 | Cheapest, minor filter issue |
+| Claude Fable 5 | 100.0s | 450 / 7,531 | $0.381 | Sophisticated, slow |
+
+Winner for cost/quality: **Opus 4.8** at $0.105 in 48s. Multi-pass consistency results in `benchmarks/`.
+
+## How it works
+
+The pipeline is three steps:
+
+1. **Prompt** (10 words): "cloud architecture diagram, 6 AWS services"
+2. **LLM generates code** (~800 tokens, 2s): SVG markup, JavaScript, Python, or scene definition
+3. **Renderer produces image** (0ms for browser, seconds for Blender): the output is editable source code
+
+The LLM pays for tokens. The renderer is free. Every output is diffable, scalable, deterministic.
+
+## When NOT to use this
+
+| Need | Use this | Use diffusion |
+|------|----------|---------------|
+| Diagrams, charts, data viz | ✅ | Overkill |
+| Illustrations with consistent style | ✅ | If photorealistic needed |
+| Architecture/system diagrams | ✅ | Never |
+| Photorealistic people/scenes | ❌ | ✅ |
+| Artistic styles requiring pixel-level texture | ❌ | ✅ |
+| Quick one-off creative exploration | Maybe | ✅ Faster iteration |
+| Production batch (1000+ images) | ✅ 100x savings | Expensive |
+
+## Articles
+
+This repo accompanies a dev.to article series:
+
+1. [The $0.0003 Image: SVG Generation on Bedrock](articles/01-the-0003-image.md)
+2. [Editorial Illustrations for $0.04 Each](articles/02-editorial-illustrations.md)
+3. [Architecture Diagrams That Don't Break](articles/03-architecture-diagrams.md)
+4. [From SVG to Unreal: The Renderer Spectrum](articles/04-renderer-spectrum.md)
+5. [Multi-Pass Consistency: 4 Models Compared](articles/05-multi-pass-benchmark.md)
+
+## Project structure
+
+```
+.
+├── examples/
+│   ├── demo.html                    # Full interactive demo (self-contained)
+│   ├── presentation.html            # Reveal.js slide deck
+│   ├── threejs-crystal-garden.html  # Three.js 3D scene
+│   ├── particle-universe.html       # Canvas 2D particle simulation
+│   ├── editorial/                   # 13-plate SVG illustration series
+│   ├── generative-flow-field.svg    # Animated flow visualization
+│   ├── manim-sine-wave.svg          # Math animation
+│   ├── isometric-data-center.svg    # Isometric server scene
+│   ├── neural-network-viz.svg       # Neural network visualization
+│   ├── circuit-board-hero.svg       # Blog hero (2:1)
+│   └── procedural-landscape.svg     # Night landscape with parallax
+├── benchmarks/
+│   ├── crayon-comparison/           # 4-model SVG benchmark results
+│   └── multi-pass/                  # Consistency test (3 passes each)
+├── articles/                        # dev.to article drafts with images
+├── docs/
+│   ├── hero-banner.svg              # Repo hero image
+│   ├── terminal-demo.svg            # Animated terminal demo
+│   └── social-preview.png           # 1280x640 social card
+└── README.md
+```
+
+## Contributing
+
+Ideas for contributions:
+
+- Add a Blender Python example (product visualization or architectural render)
+- Add a Godot .tscn scene example
+- Add a Manim video generation example
+- Benchmark more models (Gemini Flash, GPT-4o)
+- Port the interactive demo to other frameworks
+- Add cost calculator for custom token rates
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## License
+
+MIT. Created by [Alexey Vidanov](https://github.com/vidanov).
+
+Built with Claude on [AWS Bedrock](https://aws.amazon.com/bedrock/). Every visual in this repo was generated programmatically. No diffusion model was called. No pixel was guessed.
+
+---
+
+<p align="center">
+  <a href="https://www.linkedin.com/in/vidanov/">LinkedIn</a> · <a href="https://github.com/vidanov">GitHub</a> · <a href="https://dev.to/vidanov">dev.to</a>
+</p>

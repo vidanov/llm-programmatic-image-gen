@@ -1,0 +1,223 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <defs>
+    <linearGradient id="terrainSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0c0a1a"/>
+      <stop offset="40%" stop-color="#1a1040"/>
+      <stop offset="70%" stop-color="#2d1b69"/>
+      <stop offset="100%" stop-color="#4c1d95"/>
+    </linearGradient>
+    <linearGradient id="sunGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="60%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.6"/>
+      <stop offset="40%" stop-color="#f59e0b" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="mtn1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e1145"/>
+      <stop offset="100%" stop-color="#0f0825"/>
+    </linearGradient>
+    <linearGradient id="mtn2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2d1b69"/>
+      <stop offset="100%" stop-color="#1a0f3d"/>
+    </linearGradient>
+    <linearGradient id="mtn3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4c1d95"/>
+      <stop offset="100%" stop-color="#2e1065"/>
+    </linearGradient>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e1b4b" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <filter id="terrBlur1"><feGaussianBlur stdDeviation="1"/></filter>
+    <filter id="terrBlur2"><feGaussianBlur stdDeviation="3"/></filter>
+    <filter id="terrBlur3"><feGaussianBlur stdDeviation="6"/></filter>
+  </defs>
+
+  <!-- Sky -->
+  <rect width="800" height="500" fill="url(#terrainSky)"/>
+
+  <!-- Stars -->
+  <g fill="#fff" opacity="0.7">
+    <circle cx="80" cy="40" r="0.8"><animate attributeName="opacity" values="0.3;0.9;0.3" dur="2.5s" repeatCount="indefinite"/></circle>
+    <circle cx="150" cy="70" r="0.6"><animate attributeName="opacity" values="0.5;1;0.5" dur="3s" repeatCount="indefinite"/></circle>
+    <circle cx="250" cy="30" r="1"><animate attributeName="opacity" values="0.4;0.9;0.4" dur="2s" repeatCount="indefinite"/></circle>
+    <circle cx="350" cy="55" r="0.5"><animate attributeName="opacity" values="0.6;1;0.6" dur="2.8s" repeatCount="indefinite"/></circle>
+    <circle cx="500" cy="25" r="0.7"><animate attributeName="opacity" values="0.3;0.8;0.3" dur="3.2s" repeatCount="indefinite"/></circle>
+    <circle cx="620" cy="45" r="0.9"><animate attributeName="opacity" values="0.5;1;0.5" dur="2.3s" repeatCount="indefinite"/></circle>
+    <circle cx="700" cy="65" r="0.6"><animate attributeName="opacity" values="0.4;0.9;0.4" dur="2.7s" repeatCount="indefinite"/></circle>
+    <circle cx="180" cy="100" r="0.5"/><circle cx="420" cy="80" r="0.4"/><circle cx="560" cy="95" r="0.6"/>
+    <circle cx="680" cy="30" r="0.5"/><circle cx="750" cy="100" r="0.4"/><circle cx="50" cy="90" r="0.7"/>
+  </g>
+
+  <!-- Sun/Moon with glow -->
+  <circle cx="600" cy="180" r="80" fill="url(#sunGlow)" filter="url(#terrBlur3)"/>
+  <circle cx="600" cy="180" r="30" fill="#fbbf24" opacity="0.9"/>
+  <circle cx="600" cy="180" r="35" fill="none" stroke="#fbbf24" stroke-width="0.5" opacity="0.4">
+    <animate attributeName="r" values="33;38;33" dur="4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.3;0.5;0.3" dur="4s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Sun rays -->
+  <g stroke="#fbbf24" stroke-width="0.8" opacity="0.15" stroke-linecap="round">
+    <line x1="600" y1="135" x2="600" y2="110"/><line x1="600" y1="225" x2="600" y2="250"/>
+    <line x1="555" y1="180" x2="530" y2="180"/><line x1="645" y1="180" x2="670" y2="180"/>
+    <line x1="570" y1="150" x2="553" y2="133"/><line x1="630" y1="150" x2="647" y2="133"/>
+    <line x1="570" y1="210" x2="553" y2="227"/><line x1="630" y1="210" x2="647" y2="227"/>
+  </g>
+
+  <!-- Mountain range 1 (far, darkest) -->
+  <path d="M0,320 L40,290 L80,310 L120,270 L160,295 L200,250 L240,280 L280,240 L320,265 L360,230 L400,260 L440,235 L480,255 L520,220 L560,250 L600,225 L640,245 L680,215 L720,240 L760,220 L800,240 L800,500 L0,500 Z" 
+    fill="url(#mtn1)" opacity="0.9"/>
+
+  <!-- Mountain range 2 (mid, medium) -->
+  <path d="M0,370 L50,340 L100,360 L140,320 L180,350 L220,310 L260,340 L300,300 L340,330 L380,290 L420,320 L460,295 L500,325 L540,285 L580,310 L620,280 L660,305 L700,275 L740,300 L780,285 L800,310 L800,500 L0,500 Z" 
+    fill="url(#mtn2)" opacity="0.95"/>
+
+  <!-- Snow caps on range 2 -->
+  <g fill="#e8e0f0" opacity="0.3">
+    <path d="M220,310 L225,318 L215,318 Z"/>
+    <path d="M300,300 L306,310 L294,310 Z"/>
+    <path d="M540,285 L547,296 L533,296 Z"/>
+    <path d="M700,275 L707,287 L693,287 Z"/>
+  </g>
+
+  <!-- Mountain range 3 (near, brightest) -->
+  <path d="M0,420 L60,390 L120,410 L170,370 L220,400 L270,360 L320,385 L370,350 L420,375 L470,345 L520,370 L570,340 L620,365 L670,335 L720,360 L770,340 L800,355 L800,500 L0,500 Z" 
+    fill="url(#mtn3)"/>
+
+  <!-- Foreground terrain -->
+  <path d="M0,460 L100,445 L200,455 L300,440 L400,450 L500,438 L600,448 L700,435 L800,445 L800,500 L0,500 Z" 
+    fill="#1a0f3d"/>
+
+  <!-- Water/lake reflection -->
+  <path d="M150,450 C200,445 280,445 350,450 C420,455 460,453 500,450 C540,447 580,448 620,452 L620,500 L150,500 Z" 
+    fill="url(#water)" opacity="0.6"/>
+  
+  <!-- Water reflection of sun -->
+  <ellipse cx="500" cy="465" rx="40" ry="4" fill="#fbbf24" opacity="0.15" filter="url(#terrBlur1)">
+    <animate attributeName="rx" values="35;45;35" dur="3s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="500" cy="472" rx="25" ry="2" fill="#fbbf24" opacity="0.1" filter="url(#terrBlur1)">
+    <animate attributeName="rx" values="20;30;20" dur="2.5s" begin="0.5s" repeatCount="indefinite"/>
+  </ellipse>
+
+  <!-- Trees silhouettes (foreground) -->
+  <g fill="#0f0825" opacity="0.9">
+    <!-- Pine trees -->
+    <path d="M40,450 L45,420 L38,425 L43,400 L36,405 L42,380 L48,380 L54,405 L47,400 L52,425 L45,420 L50,450 Z"/>
+    <path d="M70,455 L74,430 L68,434 L73,415 L66,418 L72,395 L78,395 L84,418 L77,415 L82,434 L76,430 L80,455 Z"/>
+    <path d="M720,448 L725,415 L718,420 L724,395 L716,400 L723,370 L729,370 L736,400 L728,395 L734,420 L727,415 L732,448 Z"/>
+    <path d="M750,452 L754,425 L748,429 L753,410 L746,414 L752,388 L758,388 L764,414 L757,410 L762,429 L756,425 L760,452 Z"/>
+    <!-- Deciduous tree -->
+    <rect x="108" y="440" width="4" height="20" fill="#0f0825"/>
+    <circle cx="110" cy="430" r="14" fill="#0f0825"/>
+    <rect x="678" y="438" width="4" height="18" fill="#0f0825"/>
+    <circle cx="680" cy="428" r="12" fill="#0f0825"/>
+  </g>
+
+  <!-- Atmospheric haze at horizon -->
+  <rect x="0" y="300" width="800" height="60" fill="#4c1d95" opacity="0.1" filter="url(#terrBlur2)"/>
+
+  <!-- Shooting star (fast streak across sky, appears briefly) -->
+  <g>
+    <!-- Star streak with tail gradient -->
+    <line x1="0" y1="0" x2="0" y2="0" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity="0">
+      <animate attributeName="x1" values="680;180" dur="0.8s" begin="0s;8s" fill="freeze" repeatCount="indefinite"/>
+      <animate attributeName="y1" values="30;110" dur="0.8s" begin="0s;8s" fill="freeze" repeatCount="indefinite"/>
+      <animate attributeName="x2" values="720;220" dur="0.8s" begin="0s;8s" fill="freeze" repeatCount="indefinite"/>
+      <animate attributeName="y2" values="20;100" dur="0.8s" begin="0s;8s" fill="freeze" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;1;1;0" dur="0.8s" begin="0s;8s" fill="freeze" repeatCount="indefinite"/>
+    </line>
+    <!-- Faint tail -->
+    <line x1="0" y1="0" x2="0" y2="0" stroke="#fff" stroke-width="1" stroke-linecap="round" opacity="0">
+      <animate attributeName="x1" values="710;210" dur="0.8s" begin="0.1s;8.1s" fill="freeze" repeatCount="indefinite"/>
+      <animate attributeName="y1" values="22;102" dur="0.8s" begin="0.1s;8.1s" fill="freeze" repeatCount="indefinite"/>
+      <animate attributeName="x2" values="750;250" dur="0.8s" begin="0.1s;8.1s" fill="freeze" repeatCount="indefinite"/>
+      <animate attributeName="y2" values="12;92" dur="0.8s" begin="0.1s;8.1s" fill="freeze" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.5;0.5;0" dur="0.8s" begin="0.1s;8.1s" fill="freeze" repeatCount="indefinite"/>
+    </line>
+  </g>
+
+  <!-- Fireflies in foreground (glowing, drifting) -->
+  <g>
+    <!-- Firefly 1 — large, bright, slow drift -->
+    <circle cx="100" cy="440" r="6" fill="#fbbf24" opacity="0" filter="url(#terrBlur1)">
+      <animate attributeName="opacity" values="0;0.5;0.5;0" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="100" cy="440" r="3" fill="#fef3c7" opacity="0">
+      <animate attributeName="opacity" values="0;1;1;0" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="442;428;442" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="cx" values="98;108;98" dur="3s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Firefly 2 -->
+    <circle cx="650" cy="430" r="5" fill="#fbbf24" opacity="0" filter="url(#terrBlur1)">
+      <animate attributeName="opacity" values="0;0.4;0.4;0" dur="2.5s" begin="0.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="650" cy="430" r="2.5" fill="#fef3c7" opacity="0">
+      <animate attributeName="opacity" values="0;1;1;0" dur="2.5s" begin="0.8s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="432;418;432" dur="2.5s" begin="0.8s" repeatCount="indefinite"/>
+      <animate attributeName="cx" values="648;660;648" dur="2.5s" begin="0.8s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Firefly 3 -->
+    <circle cx="380" cy="445" r="7" fill="#fbbf24" opacity="0" filter="url(#terrBlur1)">
+      <animate attributeName="opacity" values="0;0.45;0.45;0" dur="4s" begin="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="380" cy="445" r="3" fill="#fef3c7" opacity="0">
+      <animate attributeName="opacity" values="0;1;1;0" dur="4s" begin="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="447;430;447" dur="4s" begin="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="cx" values="378;395;378" dur="4s" begin="1.5s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Firefly 4 -->
+    <circle cx="220" cy="450" r="5" fill="#fbbf24" opacity="0" filter="url(#terrBlur1)">
+      <animate attributeName="opacity" values="0;0.4;0.4;0" dur="3.5s" begin="2.2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="220" cy="450" r="2.5" fill="#fef3c7" opacity="0">
+      <animate attributeName="opacity" values="0;0.9;0.9;0" dur="3.5s" begin="2.2s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="452;435;452" dur="3.5s" begin="2.2s" repeatCount="indefinite"/>
+      <animate attributeName="cx" values="218;230;218" dur="3.5s" begin="2.2s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Firefly 5 -->
+    <circle cx="520" cy="438" r="6" fill="#fbbf24" opacity="0" filter="url(#terrBlur1)">
+      <animate attributeName="opacity" values="0;0.5;0.5;0" dur="2.8s" begin="0.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="520" cy="438" r="3" fill="#fef3c7" opacity="0">
+      <animate attributeName="opacity" values="0;1;1;0" dur="2.8s" begin="0.5s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="440;424;440" dur="2.8s" begin="0.5s" repeatCount="indefinite"/>
+      <animate attributeName="cx" values="518;530;518" dur="2.8s" begin="0.5s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Firefly 6 — far right -->
+    <circle cx="730" cy="442" r="4" fill="#fbbf24" opacity="0" filter="url(#terrBlur1)">
+      <animate attributeName="opacity" values="0;0.35;0.35;0" dur="3.2s" begin="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="730" cy="442" r="2" fill="#fef3c7" opacity="0">
+      <animate attributeName="opacity" values="0;0.9;0.9;0" dur="3.2s" begin="3s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="444;432;444" dur="3.2s" begin="3s" repeatCount="indefinite"/>
+      <animate attributeName="cx" values="728;738;728" dur="3.2s" begin="3s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Firefly 7 — far left -->
+    <circle cx="55" cy="448" r="5" fill="#fbbf24" opacity="0" filter="url(#terrBlur1)">
+      <animate attributeName="opacity" values="0;0.4;0.4;0" dur="3.8s" begin="1s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="55" cy="448" r="2.5" fill="#fef3c7" opacity="0">
+      <animate attributeName="opacity" values="0;1;1;0" dur="3.8s" begin="1s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="450;434;450" dur="3.8s" begin="1s" repeatCount="indefinite"/>
+      <animate attributeName="cx" values="53;65;53" dur="3.8s" begin="1s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- Info overlay -->
+  <g font-family="ui-monospace, monospace" font-size="9" opacity="0.5">
+    <text x="20" y="488" fill="#a78bfa" letter-spacing="1">PROCEDURAL LANDSCAPE · 3 MOUNTAIN LAYERS · PARALLAX DEPTH</text>
+    <text x="780" y="488" fill="#a78bfa" text-anchor="end" letter-spacing="1">~1,600 TOKENS · $0.0006</text>
+  </g>
+</svg>

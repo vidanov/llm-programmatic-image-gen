@@ -1,0 +1,229 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <defs>
+    <radialGradient id="glow1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#22c55e" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#4ade80" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#4ade80" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur1"><feGaussianBlur stdDeviation="2"/></filter>
+    <filter id="blur2"><feGaussianBlur stdDeviation="4"/></filter>
+    <filter id="blur3"><feGaussianBlur stdDeviation="8"/></filter>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#050a07"/>
+      <stop offset="50%" stop-color="#0a1510"/>
+      <stop offset="100%" stop-color="#0d1f15"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="600" fill="url(#bgGrad)"/>
+
+  <!-- Subtle grid -->
+  <g opacity="0.06" stroke="#22c55e" stroke-width="0.5">
+    <line x1="0" y1="100" x2="800" y2="100"/><line x1="0" y1="200" x2="800" y2="200"/>
+    <line x1="0" y1="300" x2="800" y2="300"/><line x1="0" y1="400" x2="800" y2="400"/>
+    <line x1="0" y1="500" x2="800" y2="500"/>
+    <line x1="100" y1="0" x2="100" y2="600"/><line x1="200" y1="0" x2="200" y2="600"/>
+    <line x1="300" y1="0" x2="300" y2="600"/><line x1="400" y1="0" x2="400" y2="600"/>
+    <line x1="500" y1="0" x2="500" y2="600"/><line x1="600" y1="0" x2="600" y2="600"/>
+    <line x1="700" y1="0" x2="700" y2="600"/>
+  </g>
+
+  <!-- Large ambient glow circles (pulsing) -->
+  <circle cx="200" cy="300" r="180" fill="url(#glow1)" filter="url(#blur3)">
+    <animate attributeName="r" values="160;200;160" dur="6s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="600" cy="250" r="150" fill="url(#glow2)" filter="url(#blur3)">
+    <animate attributeName="r" values="130;170;130" dur="5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="400" cy="450" r="120" fill="url(#glow1)" filter="url(#blur2)" opacity="0.5">
+    <animate attributeName="r" values="100;140;100" dur="7s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Flow curves — animated drawing with visible stroke-dasharray -->
+  <g fill="none" stroke-linecap="round">
+    <!-- Main flow line 1 (draws itself continuously) -->
+    <path d="M0,250 C80,230 120,180 200,190 C280,200 320,260 400,240 C480,220 520,170 600,180 C680,190 720,230 800,220"
+      stroke="#22c55e" stroke-width="2.5" opacity="0.9"
+      stroke-dasharray="800" stroke-dashoffset="800">
+      <animate attributeName="stroke-dashoffset" values="800;0;0;800" dur="5s" repeatCount="indefinite"/>
+    </path>
+
+    <!-- Main flow line 2 -->
+    <path d="M0,320 C100,310 160,270 240,285 C320,300 380,340 460,325 C540,310 590,265 670,278 C750,290 780,315 800,305"
+      stroke="#4ade80" stroke-width="2" opacity="0.7"
+      stroke-dasharray="800" stroke-dashoffset="800">
+      <animate attributeName="stroke-dashoffset" values="800;0;0;800" dur="6s" begin="0.5s" repeatCount="indefinite"/>
+    </path>
+
+    <!-- Main flow line 3 -->
+    <path d="M0,400 C110,385 170,340 260,360 C350,380 400,415 480,395 C560,375 610,335 690,348 C770,360 790,385 800,375"
+      stroke="#10b981" stroke-width="1.8" opacity="0.6"
+      stroke-dasharray="800" stroke-dashoffset="800">
+      <animate attributeName="stroke-dashoffset" values="800;0;0;800" dur="7s" begin="1s" repeatCount="indefinite"/>
+    </path>
+
+    <!-- Secondary flowing lines -->
+    <path d="M0,180 Q200,150 400,180 T800,160"
+      stroke="#86efac" stroke-width="1" opacity="0.5"
+      stroke-dasharray="400" stroke-dashoffset="400">
+      <animate attributeName="stroke-dashoffset" values="400;0;0;400" dur="4s" begin="0.3s" repeatCount="indefinite"/>
+    </path>
+
+    <path d="M0,460 Q200,430 400,455 T800,440"
+      stroke="#34d399" stroke-width="1.2" opacity="0.4"
+      stroke-dasharray="400" stroke-dashoffset="400">
+      <animate attributeName="stroke-dashoffset" values="400;0;0;400" dur="4.5s" begin="1.5s" repeatCount="indefinite"/>
+    </path>
+
+    <!-- Vertical accent curves -->
+    <path d="M300,0 C290,100 320,200 310,300 S290,400 300,500 S310,550 305,600"
+      stroke="#22c55e" stroke-width="1.5" opacity="0.3"
+      stroke-dasharray="600" stroke-dashoffset="600">
+      <animate attributeName="stroke-dashoffset" values="600;0;0;600" dur="8s" repeatCount="indefinite"/>
+    </path>
+    <path d="M500,0 C510,80 490,160 500,250 S510,350 500,450 S490,530 495,600"
+      stroke="#4ade80" stroke-width="1.2" opacity="0.25"
+      stroke-dasharray="600" stroke-dashoffset="600">
+      <animate attributeName="stroke-dashoffset" values="600;0;0;600" dur="9s" begin="2s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- Traveling particles along the flow paths -->
+  <g filter="url(#blur1)">
+    <!-- Particle traveling along flow 1 -->
+    <circle r="5" fill="#22c55e" opacity="0.9">
+      <animateMotion dur="5s" repeatCount="indefinite"
+        path="M0,250 C80,230 120,180 200,190 C280,200 320,260 400,240 C480,220 520,170 600,180 C680,190 720,230 800,220"/>
+    </circle>
+    <!-- Second particle, offset -->
+    <circle r="3.5" fill="#4ade80" opacity="0.7">
+      <animateMotion dur="5s" begin="-2.5s" repeatCount="indefinite"
+        path="M0,250 C80,230 120,180 200,190 C280,200 320,260 400,240 C480,220 520,170 600,180 C680,190 720,230 800,220"/>
+    </circle>
+
+    <!-- Particle traveling along flow 2 -->
+    <circle r="4.5" fill="#4ade80" opacity="0.85">
+      <animateMotion dur="6s" repeatCount="indefinite"
+        path="M0,320 C100,310 160,270 240,285 C320,300 380,340 460,325 C540,310 590,265 670,278 C750,290 780,315 800,305"/>
+    </circle>
+    <circle r="3" fill="#86efac" opacity="0.6">
+      <animateMotion dur="6s" begin="-3s" repeatCount="indefinite"
+        path="M0,320 C100,310 160,270 240,285 C320,300 380,340 460,325 C540,310 590,265 670,278 C750,290 780,315 800,305"/>
+    </circle>
+
+    <!-- Particle traveling along flow 3 -->
+    <circle r="4" fill="#10b981" opacity="0.8">
+      <animateMotion dur="7s" repeatCount="indefinite"
+        path="M0,400 C110,385 170,340 260,360 C350,380 400,415 480,395 C560,375 610,335 690,348 C770,360 790,385 800,375"/>
+    </circle>
+  </g>
+
+  <!-- Nodes / intersection points with pulsing glow -->
+  <g>
+    <circle cx="200" cy="190" r="4" fill="#22c55e" opacity="0.9">
+      <animate attributeName="r" values="3;7;3" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.9;0.4;0.9" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="200" cy="190" r="2" fill="#fff"/>
+
+    <circle cx="400" cy="240" r="5" fill="#4ade80" opacity="0.9">
+      <animate attributeName="r" values="4;9;4" dur="2.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.9;0.3;0.9" dur="2.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="400" cy="240" r="2.5" fill="#fff"/>
+
+    <circle cx="600" cy="180" r="4.5" fill="#22c55e" opacity="0.9">
+      <animate attributeName="r" values="3.5;8;3.5" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.9;0.35;0.9" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="600" cy="180" r="2" fill="#fff"/>
+
+    <circle cx="240" cy="285" r="3.5" fill="#10b981" opacity="0.8">
+      <animate attributeName="r" values="3;6;3" dur="2.2s" begin="0.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2.2s" begin="0.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="240" cy="285" r="1.5" fill="#fff"/>
+
+    <circle cx="460" cy="325" r="3.8" fill="#34d399" opacity="0.85">
+      <animate attributeName="r" values="3;7;3" dur="2.8s" begin="1s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.85;0.3;0.85" dur="2.8s" begin="1s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="460" cy="325" r="1.8" fill="#fff"/>
+
+    <circle cx="670" cy="278" r="3.5" fill="#4ade80" opacity="0.8">
+      <animate attributeName="r" values="3;6.5;3" dur="2.4s" begin="0.7s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2.4s" begin="0.7s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="670" cy="278" r="1.5" fill="#fff"/>
+  </g>
+
+  <!-- Floating particles that rise upward (very visible) -->
+  <g fill="#4ade80">
+    <circle cx="120" cy="500" r="2">
+      <animate attributeName="cy" values="550;50" dur="6s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.8;0.8;0" dur="6s" repeatCount="indefinite"/>
+      <animate attributeName="cx" values="120;140;110;130" dur="6s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="280" cy="500" r="1.5">
+      <animate attributeName="cy" values="580;30" dur="7s" begin="1s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.7;0.7;0" dur="7s" begin="1s" repeatCount="indefinite"/>
+      <animate attributeName="cx" values="280;265;290;275" dur="7s" begin="1s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="450" cy="500" r="2.5">
+      <animate attributeName="cy" values="560;20" dur="8s" begin="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.9;0.9;0" dur="8s" begin="2s" repeatCount="indefinite"/>
+      <animate attributeName="cx" values="450;470;440;460" dur="8s" begin="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="600" cy="500" r="1.8">
+      <animate attributeName="cy" values="570;40" dur="6.5s" begin="0.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.7;0.7;0" dur="6.5s" begin="0.5s" repeatCount="indefinite"/>
+      <animate attributeName="cx" values="600;585;610;595" dur="6.5s" begin="0.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="730" cy="500" r="2">
+      <animate attributeName="cy" values="550;60" dur="7.5s" begin="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.8;0.8;0" dur="7.5s" begin="3s" repeatCount="indefinite"/>
+      <animate attributeName="cx" values="730;745;720;735" dur="7.5s" begin="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="50" cy="500" r="1.5">
+      <animate attributeName="cy" values="560;70" dur="9s" begin="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.6;0.6;0" dur="9s" begin="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="cx" values="50;60;40;55" dur="9s" begin="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="350" cy="500" r="2.2">
+      <animate attributeName="cy" values="580;30" dur="7s" begin="4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.85;0.85;0" dur="7s" begin="4s" repeatCount="indefinite"/>
+      <animate attributeName="cx" values="350;340;360;345" dur="7s" begin="4s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- Connecting lines between nodes (pulsing) -->
+  <g stroke="#22c55e" stroke-width="0.8" opacity="0.4" stroke-dasharray="6 4">
+    <line x1="200" y1="190" x2="400" y2="240">
+      <animate attributeName="stroke-dashoffset" from="20" to="0" dur="1.5s" repeatCount="indefinite"/>
+    </line>
+    <line x1="400" y1="240" x2="600" y2="180">
+      <animate attributeName="stroke-dashoffset" from="20" to="0" dur="1.5s" begin="0.3s" repeatCount="indefinite"/>
+    </line>
+    <line x1="240" y1="285" x2="460" y2="325">
+      <animate attributeName="stroke-dashoffset" from="20" to="0" dur="1.8s" begin="0.5s" repeatCount="indefinite"/>
+    </line>
+    <line x1="460" y1="325" x2="670" y2="278">
+      <animate attributeName="stroke-dashoffset" from="20" to="0" dur="1.8s" begin="0.8s" repeatCount="indefinite"/>
+    </line>
+  </g>
+
+  <!-- Corner frame -->
+  <g stroke="#22c55e" stroke-width="0.8" opacity="0.3" fill="none">
+    <path d="M30,30 L30,50 M30,30 L50,30"/>
+    <path d="M770,30 L770,50 M770,30 L750,30"/>
+    <path d="M30,570 L30,550 M30,570 L50,570"/>
+    <path d="M770,570 L770,550 M770,570 L750,570"/>
+  </g>
+
+  <!-- Title overlay -->
+  <text x="400" y="580" font-family="ui-monospace, monospace" font-size="10" fill="#22c55e" opacity="0.6" text-anchor="middle" letter-spacing="3">FLOW FIELD · GENERATIVE · ~1,800 TOKENS · $0.0007</text>
+</svg>
