@@ -8,11 +8,11 @@ canonical_url:
 series: "Code as Canvas: LLM Programmatic Image Generation"
 ---
 
-Last month I needed 200 blog illustrations. GPT Image 1.5 quoted me $6.80. That's not much, but the images weren't editable, weren't scalable, and hallucinated my text labels 40% of the time.
+Image generation APIs charge $0.02-0.20 per image. Meanwhile, I've been using Claude's artifacts to create SVG illustrations for months. They're editable, scalable, and the text is always perfect.
 
-Then I tried something obvious: ask Claude to write the SVG instead of generating pixels.
+I got curious: what does this actually cost on Bedrock? And which use cases can it cover compared to diffusion models?
 
-Cost: $0.12 for all 200. Every text label perfect. Every image scalable to any resolution. Every one diffable in git.
+Turns out: $0.0003 per image. And the list of covered use cases is longer than I expected.
 
 ## The pipeline
 
@@ -114,7 +114,7 @@ The decision is simple:
 
 The full interactive demo with cost calculator, live SVG generation, and model benchmarks:
 
-**[labs.p.awsnavigator.com/code-as-canvas](https://labs.p.awsnavigator.com/code-as-canvas/)**
+**[labs.p.awsnavigator.com/code-as-canvas](https://labs.p.awsnavigator.com/code-as-canvas/index.html)**
 
 Source code and examples: [github.com/vidanov/llm-programmatic-image-gen](https://github.com/vidanov/llm-programmatic-image-gen)
 

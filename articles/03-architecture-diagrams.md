@@ -10,7 +10,7 @@ series: "Code as Canvas: LLM Programmatic Image Generation"
 
 Every time an AI agent generates an AWS architecture diagram for draw.io, the same thing happens: half the icons render as empty white boxes. The service names in the prompt don't match the stencil identifiers in draw.io's AWS library.
 
-I spent two weeks mapping every AWS service to its correct draw.io stencil path, current as of July 2026. The result is a skill file that any AI agent can read, and it solves the problem permanently.
+I mapped every commonly-used AWS service to its correct draw.io stencil path, current as of July 2026. The result is a skill file with 270+ verified mappings that any AI agent can read.
 
 ## The problem, visualized
 
@@ -116,7 +116,7 @@ These rules come from AWS's own architecture diagram guidelines. When the LLM fo
 
 The interactive demo shows a real-time editing loop: the diagram re-renders as the LLM modifies the XML (swapping icons, adding nodes, renaming labels):
 
-**[labs.p.awsnavigator.com/code-as-canvas](https://labs.p.awsnavigator.com/code-as-canvas/demo.html#archdiagram)**
+**[labs.p.awsnavigator.com/code-as-canvas](https://labs.p.awsnavigator.com/code-as-canvas/index.html)**
 
 ## Comparison to alternatives
 
@@ -133,7 +133,7 @@ The programmatic approach gives you the editability of manual draw.io with the s
 ## Source
 
 - Skill repo: [github.com/vidanov/aws-architecture-diagram-skill](https://github.com/vidanov/aws-architecture-diagram-skill)
-- Full demo: [labs.p.awsnavigator.com/code-as-canvas](https://labs.p.awsnavigator.com/code-as-canvas/)
+- Full demo: [labs.p.awsnavigator.com/code-as-canvas](https://labs.p.awsnavigator.com/code-as-canvas/index.html)
 - All examples: [github.com/vidanov/llm-programmatic-image-gen](https://github.com/vidanov/llm-programmatic-image-gen)
 
 Next: the renderer spectrum. The same principle (LLM writes code, engine renders) works with Three.js, Blender, Godot, and Unreal Engine.

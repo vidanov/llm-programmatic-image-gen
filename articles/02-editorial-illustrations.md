@@ -128,7 +128,7 @@ For those cases, use diffusion for the base and overlay programmatic text/data. 
 
 ## Try it
 
-Interactive demo with the full gallery: [labs.p.awsnavigator.com/code-as-canvas](https://labs.p.awsnavigator.com/code-as-canvas/)
+Interactive demo with the full gallery: [labs.p.awsnavigator.com/code-as-canvas](https://labs.p.awsnavigator.com/code-as-canvas/index.html)
 
 Source and all SVGs: [github.com/vidanov/llm-programmatic-image-gen](https://github.com/vidanov/llm-programmatic-image-gen)
 

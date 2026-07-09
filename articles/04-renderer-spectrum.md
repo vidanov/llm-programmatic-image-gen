@@ -150,7 +150,7 @@ The renderer already exists. You're already paying for the LLM. The only questio
 
 ## Source and demos
 
-- Full demo: [labs.p.awsnavigator.com/code-as-canvas](https://labs.p.awsnavigator.com/code-as-canvas/)
+- Full demo: [labs.p.awsnavigator.com/code-as-canvas](https://labs.p.awsnavigator.com/code-as-canvas/index.html)
 - Source: [github.com/vidanov/llm-programmatic-image-gen](https://github.com/vidanov/llm-programmatic-image-gen)
 
 Next: multi-pass consistency testing. Same prompt, four Claude models, three passes each. How repeatable is the output?
