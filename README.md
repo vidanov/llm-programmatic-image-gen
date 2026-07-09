@@ -156,11 +156,11 @@ The LLM pays for tokens. The renderer is free. Every output is diffable, scalabl
 
 This repo accompanies a dev.to article series:
 
-1. [The $0.0003 Image: SVG Generation on Bedrock](articles/01-the-0003-image.md)
-2. [Editorial Illustrations for $0.04 Each](articles/02-editorial-illustrations.md)
-3. [Architecture Diagrams That Don't Break](articles/03-architecture-diagrams.md)
-4. [From SVG to Unreal: The Renderer Spectrum](articles/04-renderer-spectrum.md)
-5. [Multi-Pass Consistency: 4 Models Compared](articles/05-multi-pass-benchmark.md)
+1. [The $0.0003 Image: SVG Generation on Bedrock](https://dev.to/vidanov)
+2. [Editorial Illustrations for $0.04 Each](https://dev.to/vidanov)
+3. [Architecture Diagrams That Don't Break](https://dev.to/vidanov)
+4. [From SVG to Unreal: The Renderer Spectrum](https://dev.to/vidanov)
+5. [Multi-Pass Consistency: 4 Models Compared](https://dev.to/vidanov)
 
 ## Project structure
 
@@ -181,7 +181,6 @@ This repo accompanies a dev.to article series:
 ├── benchmarks/
 │   ├── crayon-comparison/           # 4-model SVG benchmark results
 │   └── multi-pass/                  # Consistency test (3 passes each)
-├── articles/                        # dev.to article drafts with images
 ├── docs/
 │   ├── hero-banner.svg              # Repo hero image
 │   ├── terminal-demo.svg            # Animated terminal demo

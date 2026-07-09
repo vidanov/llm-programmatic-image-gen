@@ -11,6 +11,9 @@ Thumbs.db
 # Kiro agent config (local)
 .kiro/
 
+# Articles (drafts, not for repo)
+articles/
+
 # Build artifacts
 *.pdf
 
