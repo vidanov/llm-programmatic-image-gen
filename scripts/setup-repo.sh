@@ -49,5 +49,5 @@ echo "  gh repo create vidanov/llm-programmatic-image-gen --public --source=. --
 echo ""
 echo "After push:"
 echo "  1. Upload docs/social-preview.svg as repo Social Preview (Settings > Social preview)"
-echo "  2. Set About: 'LLMs write rendering code. Existing engines produce the image. 100x cheaper than diffusion.'"
+echo "  2. Set About: 'LLMs write rendering code. Existing engines produce the image. 2-50x cheaper than diffusion.'"
 echo "  3. Topics: llm, svg, image-generation, aws-bedrock, three-js, generative-art, blender, cost-optimization"

@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LLM Programmatic Image Generation — Interactive Demo</title>
-<meta name="description" content="Interactive demo: LLM writes code, renderer produces images. SVG, Three.js, Canvas, Blender, Unreal Engine — all 100× cheaper than diffusion models.">
+<meta name="description" content="Interactive demo: LLM writes code, renderer produces images. SVG, Three.js, Canvas, Blender, Unreal Engine — 2–50× cheaper than diffusion models.">
 <meta property="og:title" content="Code as Canvas — Interactive Demo">
-<meta property="og:description" content="LLM writes code, renderer produces images. From $0.0003/image. Live examples, cost calculator, benchmarks.">
+<meta property="og:description" content="LLM writes code, renderer produces images. From $0.007/image. Live examples, cost calculator, benchmarks.">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="author" content="Alexey Vidanov">
@@ -260,7 +260,7 @@ section { margin-bottom: 72px; }
     <div class="hero-terminal" id="heroTerminal">
       <div class="line" style="animation-delay:0.5s;"><span style="color:#4ade80;">$</span> prompt: "cloud architecture diagram"</div>
       <div class="line" style="animation-delay:1.2s;"><span style="color:#fbbf24;">→</span> generating SVG... (1.2s)</div>
-      <div class="line" style="animation-delay:2s;"><span style="color:#4ade80;">✓</span> 847 tokens · $0.0003</div>
+      <div class="line" style="animation-delay:2s;"><span style="color:#4ade80;">✓</span> 847 tokens · $0.01</div>
       <div class="line" style="animation-delay:2.8s;"><span style="color:#4ade80;">✓</span> rendered: 1200×800px</div>
       <div class="line" style="animation-delay:3.5s;"><span style="color:#60a5fa;">△</span> editable, scalable, perfect<span class="cursor"></span></div>
     </div>
@@ -357,7 +357,7 @@ section { margin-bottom: 72px; }
         <div class="bar-track"><div class="bar-fill" id="sonnetBar" style="width:50%;background:var(--accent);opacity:0.6;"></div></div>
       </div>
       <div class="bar-row">
-        <div class="bar-label"><span>LLM→SVG Flash ($0.0006/img)</span><span class="cost" id="flashLabel" style="color:var(--accent);">$0.60</span></div>
+        <div class="bar-label"><span>LLM→SVG Haiku ($0.014/img)</span><span class="cost" id="flashLabel" style="color:var(--accent);">$14.00</span></div>
         <div class="bar-track"><div class="bar-fill" id="flashBar" style="width:1%;background:var(--accent);"></div></div>
       </div>
       <div class="bar-row">
@@ -368,8 +368,8 @@ section { margin-bottom: 72px; }
 
     <div class="insight">
       <b>At <span id="savingsVolume">1,000</span> images/month:</b>
-      Flash SVG saves <span id="savingsAmount" style="font-weight:700;color:var(--accent-dark);">$59.40</span> vs GPT Image 1.5.
-      That is <span id="savingsMultiplier" style="font-weight:700;color:var(--accent-dark);">100x</span> cheaper.
+      Haiku SVG saves <span id="savingsAmount" style="font-weight:700;color:var(--accent-dark);">$20.00</span> vs GPT Image 1.5.
+      That is <span id="savingsMultiplier" style="font-weight:700;color:var(--accent-dark);">2x</span> cheaper.
     </div>
   </div>
 
@@ -382,7 +382,7 @@ section { margin-bottom: 72px; }
         <tr><td>GPT Image 1.5 (OpenAI)</td><td class="num">$0.009–0.20</td><td>3–10s</td><td><span class="badge badge-ok">Good</span></td><td>No</td><td><span class="badge badge-ok">Yes</span></td></tr>
         <tr><td>gpt-image-1-mini</td><td class="num">$0.005–0.05</td><td>2–6s</td><td><span class="badge badge-ok">Good</span></td><td>No</td><td><span class="badge badge-ok">Yes</span></td></tr>
         <tr><td>Nano Banana 2 (Google)</td><td class="num">$0.045–0.15</td><td>2–8s</td><td><span class="badge badge-ok">Good</span></td><td>No</td><td><span class="badge badge-ok">Yes</span></td></tr>
-        <tr style="background:var(--accent-tint);"><td><b>LLM → SVG</b></td><td class="num" style="color:var(--accent-dark);">$0.0003–0.045</td><td>1–5s</td><td><span class="badge badge-ok">Perfect</span></td><td>Full</td><td>No</td></tr>
+        <tr style="background:var(--accent-tint);"><td><b>LLM → SVG</b></td><td class="num" style="color:var(--accent-dark);">$0.004–0.10</td><td>1–5s</td><td><span class="badge badge-ok">Perfect</span></td><td>Full</td><td>No</td></tr>
         <tr style="background:var(--accent-tint);"><td><b>LLM → HTML</b></td><td class="num" style="color:var(--accent-dark);">$0.001–0.045</td><td>2–5s</td><td><span class="badge badge-ok">Perfect</span></td><td>Full</td><td>No</td></tr>
         <tr style="background:var(--accent-tint);"><td><b>LLM → p5.js / Three.js</b></td><td class="num" style="color:var(--accent-dark);">$0.001–0.003</td><td>2–5s</td><td><span class="badge badge-ok">Perfect</span></td><td>Full</td><td>Canvas/WebGL</td></tr>
         <tr style="background:var(--accent-tint);"><td><b>LLM → Blender/UE5</b></td><td class="num" style="color:var(--accent-dark);">$0.002–0.01</td><td>5–30s</td><td><span class="badge badge-ok">Perfect</span></td><td>Full</td><td><span class="badge badge-ok">Yes</span></td></tr>
@@ -391,7 +391,7 @@ section { margin-bottom: 72px; }
       </tbody>
     </table>
     </div>
-    <div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:10px;padding-top:8px;border-top:1px solid var(--line);">Frontier models (GPT Image 1.5, Nano Banana 2) now render text well — likely using code-based composition internally. The differentiators for programmatic: full editability, deterministic output, version control, and 10–100× cost at scale. Prices as of March 2026.</div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:10px;padding-top:8px;border-top:1px solid var(--line);">Frontier models (GPT Image 1.5, Nano Banana 2) now render text well — likely using code-based composition internally. The differentiators for programmatic: full editability, deterministic output, version control, and 2–50× cost savings at scale. Prices as of July 2026.</div>
   </div>
 </section>
 
@@ -851,14 +851,14 @@ section { margin-bottom: 72px; }
     <table class="ctable">
       <thead><tr><th>Renderer</th><th>Capability</th><th>Typical tokens</th><th>Cost/image</th><th>LLM writes</th><th>Runs on</th></tr></thead>
       <tbody>
-        <tr style="background:var(--accent-tint);"><td><b>SVG (browser)</b></td><td>2D vector</td><td class="num">~800</td><td class="num" style="color:var(--accent-dark);">$0.0003</td><td>SVG markup</td><td>Any browser</td></tr>
-        <tr style="background:var(--accent-tint);"><td><b>Canvas 2D (browser)</b></td><td>Pixel art, particles, simulations</td><td class="num">~2,400</td><td class="num" style="color:var(--accent-dark);">$0.001</td><td>JavaScript</td><td>Any browser</td></tr>
-        <tr style="background:var(--accent-tint);"><td><b>p5.js (browser)</b></td><td>2D creative/generative</td><td class="num">~1,500</td><td class="num" style="color:var(--accent-dark);">$0.0006</td><td>JavaScript sketch</td><td>Any browser</td></tr>
-        <tr style="background:var(--accent-tint);"><td><b>Three.js (browser)</b></td><td>3D scenes, PBR</td><td class="num">~3,000</td><td class="num" style="color:var(--accent-dark);">$0.001</td><td>JavaScript scene</td><td>Any browser (WebGL)</td></tr>
-        <tr style="background:var(--accent-tint);"><td><b>Manim (Python)</b></td><td>Math animations</td><td class="num">~2,000</td><td class="num" style="color:var(--accent-dark);">$0.001</td><td>Python scene class</td><td>CLI + ffmpeg</td></tr>
-        <tr style="background:var(--accent-tint);"><td><b>Godot (.tscn)</b></td><td>2D/3D game scenes</td><td class="num">~2,500</td><td class="num" style="color:var(--accent-dark);">$0.001</td><td>Scene text file</td><td>Godot (free, OSS)</td></tr>
-        <tr style="background:var(--accent-tint);"><td><b>Blender (Python)</b></td><td>Photorealistic 3D</td><td class="num">~5,000</td><td class="num" style="color:var(--accent-dark);">$0.002</td><td>bpy Python script</td><td>Headless CLI</td></tr>
-        <tr style="background:var(--accent-tint);"><td><b>Unreal Engine (Python)</b></td><td>AAA-grade real-time</td><td class="num">~8,000</td><td class="num" style="color:var(--accent-dark);">$0.003</td><td>Python + Blueprints</td><td>UE Editor / headless</td></tr>
+        <tr style="background:var(--accent-tint);"><td><b>SVG (browser)</b></td><td>2D vector</td><td class="num">~800</td><td class="num" style="color:var(--accent-dark);">~$0.01</td><td>SVG markup</td><td>Any browser</td></tr>
+        <tr style="background:var(--accent-tint);"><td><b>Canvas 2D (browser)</b></td><td>Pixel art, particles, simulations</td><td class="num">~2,400</td><td class="num" style="color:var(--accent-dark);">~$0.04</td><td>JavaScript</td><td>Any browser</td></tr>
+        <tr style="background:var(--accent-tint);"><td><b>p5.js (browser)</b></td><td>2D creative/generative</td><td class="num">~1,500</td><td class="num" style="color:var(--accent-dark);">~$0.02</td><td>JavaScript sketch</td><td>Any browser</td></tr>
+        <tr style="background:var(--accent-tint);"><td><b>Three.js (browser)</b></td><td>3D scenes, PBR</td><td class="num">~3,000</td><td class="num" style="color:var(--accent-dark);">~$0.05</td><td>JavaScript scene</td><td>Any browser (WebGL)</td></tr>
+        <tr style="background:var(--accent-tint);"><td><b>Manim (Python)</b></td><td>Math animations</td><td class="num">~2,000</td><td class="num" style="color:var(--accent-dark);">~$0.03</td><td>Python scene class</td><td>CLI + ffmpeg</td></tr>
+        <tr style="background:var(--accent-tint);"><td><b>Godot (.tscn)</b></td><td>2D/3D game scenes</td><td class="num">~2,500</td><td class="num" style="color:var(--accent-dark);">~$0.04</td><td>Scene text file</td><td>Godot (free, OSS)</td></tr>
+        <tr style="background:var(--accent-tint);"><td><b>Blender (Python)</b></td><td>Photorealistic 3D</td><td class="num">~5,000</td><td class="num" style="color:var(--accent-dark);">~$0.08</td><td>bpy Python script</td><td>Headless CLI</td></tr>
+        <tr style="background:var(--accent-tint);"><td><b>Unreal Engine (Python)</b></td><td>AAA-grade real-time</td><td class="num">~8,000</td><td class="num" style="color:var(--accent-dark);">~$0.12</td><td>Python + Blueprints</td><td>UE Editor / headless</td></tr>
         <tr><td>GPT Image 1.5 / Nano Banana 2</td><td>Photorealistic</td><td class="num">N/A</td><td class="num" style="color:#b45309;">$0.02–0.20</td><td>—</td><td>API</td></tr>
       </tbody>
     </table>
@@ -2197,6 +2197,9 @@ User: Create a complete SVG image of a boy with a cat in a crayon art style.
         <tr><td><b>Remotion</b></td><td>MP4 video</td><td>Animated explainers, data videos, social clips</td><td><a href="https://remotion.dev" target="_blank" style="color:var(--accent);">remotion.dev</a></td></tr>
         <tr><td><b>Motion Canvas</b></td><td>MP4 video</td><td>Code-driven animations, manim alternative</td><td><a href="https://motioncanvas.io" target="_blank" style="color:var(--accent);">motioncanvas.io</a></td></tr>
         <tr><td><b>Manim</b></td><td>MP4 video</td><td>Math animations (3Blue1Brown style)</td><td><a href="https://www.manim.community" target="_blank" style="color:var(--accent);">manim.community</a></td></tr>
+        <tr><td><b>GSAP</b></td><td>Animation library</td><td>Timelines, easing, scroll-triggers for SVG/Canvas/DOM</td><td><a href="https://gsap.com" target="_blank" style="color:var(--accent);">gsap.com</a></td></tr>
+        <tr><td><b>Lottie</b></td><td>JSON animation</td><td>Cross-platform animations (iOS/Android/web). Verbose JSON, high token cost</td><td><a href="https://lottiefiles.com" target="_blank" style="color:var(--accent);">lottiefiles.com</a></td></tr>
+        <tr><td><b>Rive</b></td><td>Binary .riv</td><td>Interactive state-machine animations. Binary format, not LLM-writable</td><td><a href="https://rive.app" target="_blank" style="color:var(--accent);">rive.app</a></td></tr>
       </tbody>
     </table>
     </div>
@@ -2244,7 +2247,7 @@ User: Create a complete SVG image of a boy with a cat in a crayon art style.
       <tbody>
         <tr><td><a href="https://arxiv.org/abs/2605.30248" target="_blank" style="color:var(--accent);">GenClaw (arXiv:2605.30248)</a></td><td>Code-driven agentic generation scores 0.878 compositional accuracy vs GPT-Image 0.832</td><td>May 2026</td></tr>
         <tr><td><a href="https://arxiv.org/abs/2412.04468" target="_blank" style="color:var(--accent);">SVG Generation Benchmark</a></td><td>Claude best at abstract instructions, Gemini cleanest code, GPT most creative</td><td>Dec 2025</td></tr>
-        <tr><td>LLM Cost at Scale</td><td>Flash-tier models (Gemini Flash, Haiku) achieve $0.0003–$0.001/image for SVG generation</td><td>2025–2026</td></tr>
+        <tr><td>LLM Cost at Scale</td><td>Flash-tier models (Gemini Flash, Haiku) achieve $0.004–$0.014/image for simple SVG; frontier models (Sonnet, Opus) $0.05–0.10 for quality output</td><td>2025–2026</td></tr>
         <tr><td>Text Rendering Comparison</td><td>Code-based approaches achieve 100% text accuracy vs 60–85% for diffusion models</td><td>Ongoing</td></tr>
       </tbody>
     </table>
@@ -2305,7 +2308,7 @@ volSlider.addEventListener('input', updateCosts);
 function updateCosts() {
   const v = parseInt(volSlider.value);
   document.getElementById('volumeVal').textContent = v.toLocaleString();
-  const dalle=v*0.034, sd=v*0.067, son=v*0.011, fl=v*0.0006, un=v*0.003;
+  const dalle=v*0.034, sd=v*0.067, son=v*0.011, fl=v*0.014, un=v*0.003;
   const maxCost = Math.max(dalle, sd);
   document.getElementById('dalleLabel').textContent = '$'+dalle.toFixed(dalle<10?2:0);
   document.getElementById('sdLabel').textContent = '$'+sd.toFixed(sd<10?2:0);
@@ -2418,8 +2421,8 @@ function genCard(){
 function updatePreview(){
   const active=document.querySelector('.tab.active').dataset.tab;
   let svg, tokens;
-  if(active==='chart'){svg=genChart();tokens='~1,000 tok ≈ $0.0003';}
-  else{svg=genCard();tokens='~600 tok ≈ $0.0002';}
+  if(active==='chart'){svg=genChart();tokens='~1,000 tok ≈ $0.01';}
+  else{svg=genCard();tokens='~600 tok ≈ $0.008';}
   document.getElementById('svgOutput').innerHTML=svg;
   document.getElementById('tokenCost').textContent=tokens;
   const clean=svg.replace(/\n\n/g,'\n').trim();

@@ -4,13 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Code as Canvas: LLM Programmatic Image Generation</title>
-  <meta name="description" content="Your image budget is 100× too high. LLMs writing rendering code produce editable, scalable, deterministic visuals at a fraction of the cost of diffusion models." />
+  <meta name="description" content="LLMs writing rendering code produce editable, scalable, deterministic visuals at 2–50x less than diffusion models." />
   <meta property="og:title" content="Code as Canvas — LLM Programmatic Image Generation" />
-  <meta property="og:description" content="Your image budget is 100× too high. From SVG to Unreal Engine — same pattern, 100× cheaper." />
+  <meta property="og:description" content="From SVG to Unreal Engine — same pattern, 2–50× cheaper than diffusion." />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Code as Canvas — LLM Programmatic Image Generation" />
-  <meta name="twitter:description" content="Your image budget is 100× too high. LLMs write code, renderers produce images. $0.0003 vs $0.03." />
+  <meta name="twitter:description" content="LLMs write code, renderers produce images. 2–50× cheaper than diffusion, and every output is editable source." />
   <meta name="author" content="Alexey Vidanov" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/theme/black.min.css" />
@@ -102,14 +102,14 @@
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;margin-top:60px;">
         <div>
           <p class="mono" style="color:var(--accent);font-size:0.45em;letter-spacing:3px;margin-bottom:16px;">CODE AS CANVAS</p>
-          <h1 style="line-height:1.1;font-size:2.8em;">Your image budget<br>is <span class="grad-text">100× too high</span></h1>
+          <h1 style="line-height:1.1;font-size:2.8em;">Your image budget<br>is <span class="grad-text">2–50× too high</span></h1>
           <p style="font-size:0.5em;margin-top:32px;color:var(--muted);">Alexey Vidanov · July 2026</p>
         </div>
         <div class="code-panel" style="font-size:0.42em;padding:28px;border-color:rgba(34,197,94,0.3);">
           <span style="color:var(--accent);">$</span> prompt: <span class="str">"cloud architecture diagram"</span><br>
           <span style="color:#fbbf24;">→</span> reasoning... <span style="color:var(--muted);">(0.8s)</span><br>
           <span style="color:#fbbf24;">→</span> writing SVG... <span style="color:var(--muted);">(1.4s)</span><br>
-          <span style="color:var(--accent);">✓</span> 847 tokens · <span style="color:var(--accent);">$0.0003</span><br>
+          <span style="color:var(--accent);">✓</span> 847 tokens · <span style="color:var(--accent);">$0.01</span><br>
           <span style="color:var(--accent);">✓</span> rendered: 1200×800 vector<br>
           <span style="color:#60a5fa;">△</span> editable · scalable · deterministic
         </div>
@@ -150,7 +150,7 @@
           <text class="pipe-fade" style="animation-delay:1.6s" x="350" y="140" font-family="ui-monospace,monospace" font-size="13" fill="#050a07" text-anchor="middle" font-weight="700">LLM</text>
           <text class="pipe-fade" style="animation-delay:1.8s" x="350" y="165" font-family="ui-monospace,monospace" font-size="9" fill="rgba(0,0,0,0.5)" text-anchor="middle">reasoning (0.6s)</text>
           <text class="pipe-fade" style="animation-delay:2.0s" x="350" y="185" font-family="ui-monospace,monospace" font-size="9" fill="rgba(0,0,0,0.5)" text-anchor="middle">writing code (1.4s)</text>
-          <text class="pipe-fade" style="animation-delay:2.2s" x="350" y="210" font-family="ui-monospace,monospace" font-size="9" fill="rgba(0,0,0,0.7)" text-anchor="middle">847 tokens · $0.0003</text>
+          <text class="pipe-fade" style="animation-delay:2.2s" x="350" y="210" font-family="ui-monospace,monospace" font-size="9" fill="rgba(0,0,0,0.7)" text-anchor="middle">847 tokens · $0.01</text>
           
           <!-- Arrow 2 -->
           <line class="pipe-draw" style="animation-delay:2.5s" x1="445" y1="170" x2="500" y2="170" stroke="#22c55e" stroke-width="2"/>
@@ -195,7 +195,7 @@
       <h2 data-id="title" style="font-size:1.4em;color:var(--muted);font-weight:300;">Code in, image out. What changes?</h2>
       <div class="stat-row">
         <div class="stat-item fragment" data-fragment-index="1">
-          <div class="stat-num">100×</div>
+          <div class="stat-num">2–50×</div>
           <div class="stat-label">Cheaper per image</div>
         </div>
         <div class="stat-item fragment" data-fragment-index="2">
@@ -214,7 +214,7 @@
         <div class="tag">Parameterized charts</div>
         <div class="tag">draw.io diagrams</div>
       </div>
-      <aside class="notes">100x = $0.067 Nano Banana 2 (1K, verified July 2026) vs ~$0.0006 Flash SVG. Zero pixels guessed because it's vector code. Terminal animations and SVG-to-GIF are additional output modes the same approach enables.</aside>
+      <aside class="notes">100x = $0.067 Nano Banana 2 (1K, verified July 2026) vs ~$0.0006 Flash SVG. But that's the extreme floor case. Realistic range: Sonnet SVG at ~$0.05 vs Nano Banana at $0.067 = just 1.3x. The real savings are on volume diagram work with Haiku ($0.014) or templates ($0.00). Zero pixels guessed because it's vector code. Terminal animations and SVG-to-GIF are additional output modes the same approach enables.</aside>
     </section>
 
     <!-- SLIDE 3: PIPELINE -->
@@ -227,7 +227,7 @@
         <div class="pipe-arrow fragment" data-fragment-index="3">→</div>
         <div class="pipe-node fragment" data-fragment-index="3"><h4>&lt;svg&gt;</h4><p>structured code</p><p class="mono" style="font-size:0.5em;color:var(--muted);margin-top:12px;border-top:1px solid rgba(34,197,94,0.2);padding-top:8px;">1.2 KB</p></div>
         <div class="pipe-arrow fragment" data-fragment-index="4">→</div>
-        <div class="pipe-node fragment" data-fragment-index="4" style="border-color:var(--accent);box-shadow:0 0 20px var(--accent-glow);"><h4>RENDERED</h4><p>editable image</p><p class="mono" style="font-size:0.5em;color:var(--accent);font-weight:700;margin-top:12px;border-top:1px solid rgba(34,197,94,0.3);padding-top:8px;">$0.0003</p></div>
+        <div class="pipe-node fragment" data-fragment-index="4" style="border-color:var(--accent);box-shadow:0 0 20px var(--accent-glow);"><h4>RENDERED</h4><p>editable image</p><p class="mono" style="font-size:0.5em;color:var(--accent);font-weight:700;margin-top:12px;border-top:1px solid rgba(34,197,94,0.3);padding-top:8px;">$0.007–$0.10</p></div>
       </div>
       <p class="fragment" data-fragment-index="5" style="font-size:0.5em;color:var(--muted);margin-top:36px;">You pay for <span style="color:var(--text);">tokens the model writes</span>. The browser renders for free. matplotlib renders for free. draw.io renders for free.</p>
       <aside class="notes">Same pipeline as the animated build, now quantified stage by stage. The key line is the last one: you only pay for the tokens the model spends writing code. The rendering engine already exists — the browser, matplotlib, draw.io. The LLM just needs to know the output format's API.</aside>
@@ -242,10 +242,10 @@
         <div class="cost-bar"><div class="label">Nano Banana 2 (1K)</div><div class="bar bar-expensive fragment" style="width:52%;" data-fragment-index="1"><span>$0.067</span></div></div>
         <div class="cost-bar"><div class="label">gpt-image-1-mini</div><div class="bar bar-mid fragment" style="width:16%;" data-fragment-index="2"><span>$0.011</span></div></div>
         <div class="cost-bar"><div class="label">Unsplash + overlay</div><div class="bar bar-cheap fragment" style="width:5%;" data-fragment-index="3"><span>$0.003</span></div></div>
-        <div class="cost-bar"><div class="label" style="color:var(--accent);">LLM → SVG (Flash)</div><div class="bar bar-free fragment" style="width:4%;min-width:100px;" data-fragment-index="4"><span>$0.0006</span></div></div>
+        <div class="cost-bar"><div class="label" style="color:var(--accent);">LLM → SVG (Haiku)</div><div class="bar bar-free fragment" style="width:4%;min-width:100px;" data-fragment-index="4"><span>$0.014</span></div></div>
       </div>
-      <p class="fragment" data-fragment-index="5" style="font-size:0.55em;color:var(--accent);font-weight:600;">At 10,000 images/month: $670 (Nano Banana 2) vs $6 (Flash SVG). <span style="color:var(--text);">~100× difference.</span></p>
-      <aside class="notes">Verified July 2026 against Google + OpenAI pricing pages. Nano Banana 2 = Gemini 3.1 Flash Image: 1K image = 1120 tokens @ $60/1M = $0.067. Nano Banana Pro 2K = $0.134. gpt-image-1-mini ≈ $0.011. Flash SVG ≈ $0.0006 (text tokens only). The green sliver at the bottom is the programmatic approach. At scale the savings compound into thousands per month.</aside>
+      <p class="fragment" data-fragment-index="5" style="font-size:0.55em;color:var(--accent);font-weight:600;">At 10,000 images/month: $670 (Nano Banana 2) vs $40–140 (Haiku/Nova SVG). <span style="color:var(--text);">5–17× difference.</span></p>
+      <aside class="notes">Verified July 2026 against Google + OpenAI pricing pages. Nano Banana 2 = Gemini 3.1 Flash Image: 1K image = 1120 tokens @ $60/1M = $0.067. Nano Banana Pro 2K = $0.134. gpt-image-1-mini ≈ $0.011. Haiku SVG ≈ $0.014 (text tokens only, usable for diagrams). Sonnet SVG ≈ $0.05 (good quality). Cheap models produce valid but visually primitive SVG — fine for diagrams, not for editorial art. The real win at scale is templates: design once with a frontier model, fill with scripts at $0.00.</aside>
     </section>
 
     <!-- SLIDE 5: THE QUESTION CHANGED -->
@@ -597,7 +597,7 @@
 
           <div style="padding:8px 14px;color:var(--accent);border-bottom:1px solid rgba(34,197,94,0.1);">SVG (browser)</div>
           <div style="padding:8px 14px;color:var(--muted);text-align:center;border-bottom:1px solid rgba(34,197,94,0.1);">~800</div>
-          <div style="padding:8px 14px;color:var(--accent);text-align:center;border-bottom:1px solid rgba(34,197,94,0.1);">$0.0003</div>
+          <div style="padding:8px 14px;color:var(--accent);text-align:center;border-bottom:1px solid rgba(34,197,94,0.1);">~$0.01</div>
           <div style="padding:8px 14px;color:var(--muted);text-align:center;border-bottom:1px solid rgba(34,197,94,0.1);">2D vector</div>
 
           <div style="padding:8px 14px;color:var(--accent);border-bottom:1px solid rgba(34,197,94,0.1);">p5.js (browser)</div>
@@ -663,7 +663,7 @@
     {text:'<span style="color:#6b8a74;">  reasoning... (0.6s)</span>', delay:600},
     {text:'<span style="color:#6b8a74;">  writing draw.io XML... (1.8s)</span>', delay:700},
     {text:'<span style="color:#3fb950;">✓</span> <span style="color:#e8f5ec;">order-processing.drawio</span> <span style="color:#6b8a74;">(12 nodes, 14 edges, 847 tokens)</span>', delay:600},
-    {text:'<span style="color:#3fb950;">✓</span> <span style="color:#22c55e;font-weight:700;">cost: $0.0003</span> <span style="color:#6b8a74;">· all icons verified · opens in draw.io</span>', delay:2000},
+    {text:'<span style="color:#3fb950;">✓</span> <span style="color:#22c55e;font-weight:700;">cost: $0.01</span> <span style="color:#6b8a74;">· all icons verified · opens in draw.io</span>', delay:2000},
   ];
   function runTerminal(){
     const container = document.getElementById('terminalLines');

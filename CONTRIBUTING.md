@@ -1,6 +1,6 @@
 # Contributing
 
-This repo is a collection of working examples proving that LLMs writing rendering code is 100x cheaper than diffusion models. Contributions that expand the renderer spectrum, add benchmarks, or improve existing examples are welcome.
+This repo is a collection of working examples proving that LLMs writing rendering code is 2–50x cheaper than diffusion models, with the added benefits of editability, determinism, and version control. Contributions that expand the renderer spectrum, add benchmarks, or improve existing examples are welcome.
 
 ## What would help most
 

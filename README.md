@@ -3,14 +3,14 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/cost-$0.0003%2Fimage-16a34a?style=flat-square" alt="Cost per image">
+  <img src="https://img.shields.io/badge/cost-$0.007--$0.10%2Fimage-16a34a?style=flat-square" alt="Cost per image">
   <img src="https://img.shields.io/badge/renderers-8%20engines-4ade80?style=flat-square" alt="8 renderers supported">
   <img src="https://img.shields.io/badge/diffusion-not%20needed-22c55e?style=flat-square" alt="No diffusion models">
   <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="MIT License">
 </p>
 
 <p align="center">
-  <b>LLMs write rendering code. Existing engines produce the image. 100x cheaper than diffusion.</b>
+  <b>LLMs write rendering code. Existing engines produce the image. 2–50x cheaper than diffusion.</b>
 </p>
 
 <p align="center">
@@ -61,20 +61,30 @@ No build step. No dependencies. Every HTML file is self-contained.
 
 ## The renderer spectrum
 
-Same pattern at every tier. LLM writes code, renderer produces the visual. Token cost grows linearly while capability grows exponentially.
+Same pattern at every tier. LLM writes code, renderer produces the visual. Token cost grows linearly while capability grows exponentially. Cost is output tokens times model rate, so the figures below use Claude Sonnet 5; on Amazon Nova or Haiku they drop 3-10x, on Opus or Fable they rise.
 
-| Renderer | Tokens | Cost | Capability | Requires |
+| Renderer | Tokens | Cost (Sonnet) | Capability | Requires |
 |----------|--------|------|------------|----------|
-| **SVG** (browser) | ~800 | $0.0003 | 2D vector, animations | Browser |
-| **Canvas 2D** (browser) | ~2,400 | $0.001 | Particles, simulations | Browser |
-| **p5.js** (browser) | ~1,500 | $0.0006 | Creative/generative art | Browser |
-| **Three.js** (browser) | ~3,000 | $0.001 | 3D scenes, PBR, WebGL | Browser |
-| **Manim** (Python) | ~2,000 | $0.001 | Math animations, video | Python + ffmpeg |
-| **Godot** (.tscn) | ~2,500 | $0.001 | Game scenes, 2D/3D | Godot (free, MIT) |
-| **Blender** (Python) | ~5,000 | $0.002 | Photorealistic 3D | Blender CLI |
-| **Unreal Engine 5** | ~8,000 | $0.003 | AAA-grade real-time | UE5 Editor |
+| **SVG** (browser) | ~800 | ~$0.01 | 2D vector, animations | Browser |
+| **p5.js** (browser) | ~1,500 | ~$0.02 | Creative/generative art | Browser |
+| **Canvas 2D** (browser) | ~2,400 | ~$0.04 | Particles, simulations | Browser |
+| **Three.js** (browser) | ~3,000 | ~$0.05 | 3D scenes, PBR, WebGL | Browser |
+| **Manim** (Python) | ~2,000 | ~$0.03 | Math animations, video | Python + ffmpeg |
+| **Godot** (.tscn) | ~2,500 | ~$0.04 | Game scenes, 2D/3D | Godot (free, MIT) |
+| **Blender** (Python) | ~5,000 | ~$0.08 | Photorealistic 3D | Blender CLI |
+| **Unreal Engine 5** | ~8,000 | ~$0.12 | AAA-grade real-time | UE5 Editor |
 
-Even Unreal Engine quality at $0.003 is 7-70x cheaper than GPT Image 1.5 at $0.02-0.20.
+An Unreal-grade frame at ~$0.12 on Sonnet (or ~$0.03 on a budget model) still beats GPT Image 1.5 at $0.02-0.20, and the output is editable source.
+
+**Animation libraries** sit alongside these renderers as power-ups, not separate tiers:
+
+| Library | LLM-friendly? | Role |
+|---------|---------------|------|
+| **GSAP** | ✅ Yes (JS) | Timelines, easing, scroll-triggers for SVG/Canvas/DOM |
+| **Lottie** | ⚠️ Marginal | Cross-platform animation JSON, but verbose (~10-50K tokens) |
+| **Rive** | ❌ No | Binary .riv format, not writable by LLM |
+
+GSAP is the natural fit: the LLM writes a `<script>` tag with GSAP calls, SVG gets buttery animation. Lottie works if you need iOS/Android parity but burns tokens. Rive requires a visual editor, so it falls outside the code-as-image thesis.
 
 ## Examples
 
@@ -94,18 +104,22 @@ Even Unreal Engine quality at $0.003 is 7-70x cheaper than GPT Image 1.5 at $0.0
 
 ## Cost comparison
 
-At 10,000 images per month:
+At 10,000 images per month (measured on Amazon Bedrock):
 
-| Method | Cost/image | Monthly total | Editable | Deterministic |
-|--------|-----------|---------------|----------|---------------|
-| GPT Image 1.5 | $0.034 | **$340** | No | No |
-| Nano Banana 2 (Google) | $0.067 | **$670** | No | No |
-| gpt-image-1-mini | $0.011 | **$110** | No | No |
-| **LLM to SVG (Flash)** | $0.0006 | **$6** | Yes | Yes |
-| **LLM to Three.js** | $0.001 | **$10** | Yes | Yes |
-| **LLM to Blender** | $0.002 | **$20** | Yes | Yes |
+| Method | Cost/image | Monthly total | Editable | Deterministic | Quality |
+|--------|-----------|---------------|----------|---------------|---------|
+| GPT Image 1.5 | $0.034 | **$340** | No | No | High |
+| Nano Banana 2 (Google) | $0.067 | **$670** | No | No | High |
+| gpt-image-1-mini | $0.011 | **$110** | No | No | Medium |
+| **Template + script (no LLM)** | $0.000 | **$0** | Yes | Yes | Fixed design |
+| **LLM to SVG, Amazon Nova Pro** | $0.004 | **$40** | Yes | Yes | Primitive |
+| **LLM to SVG, Claude Haiku 4.5** | $0.014 | **$140** | Yes | Yes | Decent |
+| **LLM to SVG, Claude Sonnet 5** | ~$0.05 | **$500** | Yes | Yes | Good |
+| **LLM to SVG, Claude Opus 4.8** | ~$0.10 | **$1,000** | Yes | Yes | Polished |
 
-The programmatic approach saves $330-660/month at this volume. At 100K images it saves $3,300-6,600/month.
+**The honest picture:** cheap models (Nova, Haiku) produce valid but visually primitive SVG. They work for simple diagrams and template-filling, not editorial illustration. For production-quality creative visuals, you need Sonnet or above, which puts you at $0.05–0.10/image: still cheaper than diffusion, but not 100x cheaper. The real win is editability and determinism, not just cost.
+
+The sweet spot: **templates designed once by a frontier model (or human), filled repeatedly by a cheap model or plain script.** One $0.10 design pass, then 10,000 fills at $0.00 each.
 
 ## Live demo
 
@@ -113,22 +127,24 @@ The full interactive demo is deployed at:
 
 **[labs.p.awsnavigator.com/code-as-canvas](https://labs.p.awsnavigator.com/code-as-canvas/index.html)**
 
-Includes: cost calculator, live SVG generation with sliders, editorial gallery, architecture diagrams, hybrid photo+overlay examples, game engine showcase with animated visuals, and model benchmarks.
+Includes: cost calculator, live SVG generation with sliders, editorial gallery, architecture diagrams, hybrid photo+overlay examples, a game engine gallery with animated visuals, and model benchmarks.
 
 The [presentation](https://labs.p.awsnavigator.com/code-as-canvas/presentation.html) (Reveal.js) covers the full thesis with speaker notes.
 
 ## Benchmarks
 
-Same prompt ("crayon-style illustration of a boy with a cat"), four Claude models on AWS Bedrock:
+Same prompt ("crayon-style illustration of a boy with a cat"), across the Amazon Bedrock lineup:
 
 | Model | Time | Tokens (in/out) | Cost | Quality |
 |-------|------|-----------------|------|---------|
+| Amazon Nova Pro | 6.7s | 84 / 1,102 | $0.004 | Valid but primitive |
+| Claude Haiku 4.5 | 16.7s | 94 / 3,419 | $0.014 | Structured, decent |
+| Claude Sonnet 5 | 48.6s | 450 / 6,128 | $0.093 | Good, minor filter issue |
+| Claude Opus 4.8 | 47.7s | 450 / 4,089 | $0.105 | Fastest frontier, cleanest |
 | Claude Opus 4.6 | 69.1s | 322 / 6,437 | $0.163 | Most complete scene |
-| Claude Opus 4.8 | 47.7s | 450 / 4,089 | $0.105 | Fastest, cleanest style |
-| Claude Sonnet 5 | 48.6s | 450 / 6,128 | $0.093 | Cheapest, minor filter issue |
 | Claude Fable 5 | 100.0s | 450 / 7,531 | $0.381 | Sophisticated, slow |
 
-Winner for cost/quality: **Opus 4.8** at $0.105 in 48s. Multi-pass consistency results in `benchmarks/`.
+A 106x cost range on one prompt, and quality tracks it: cheap is primitive, frontier is polished. Sweet spot for rich art is **Opus 4.8** at $0.105; **Nova/Haiku** own the cheap diagram floor. Multi-pass consistency results in `benchmarks/`.
 
 ## How it works
 
@@ -154,13 +170,14 @@ The LLM pays for tokens. The renderer is free. Every output is diffable, scalabl
 
 ## Articles
 
-This repo accompanies a dev.to article series ("Code as Canvas"):
+This repo accompanies a dev.to article series ("Code as Canvas"). Start with the framework, then the deep-dives:
 
-1. The $0.0003 Image: SVG Generation on Bedrock *(coming soon)*
-2. Editorial Illustrations for $0.04 Each *(coming soon)*
-3. Architecture Diagrams That Don't Break *(coming soon)*
-4. From SVG to Unreal: The Renderer Spectrum *(coming soon)*
-5. Multi-Pass Consistency: 4 Models Compared *(coming soon)*
+0. Code or Diffusion? A Field Guide to Programmatic Image Generation *(coming soon)*
+1. The $0.0003 Diagram: When to Fire Your Image API (and When Not To) *(coming soon)*
+2. One Style Document, 8 Editorial Plates *(coming soon)*
+3. Architecture Diagrams That Don't Break: 270+ Verified AWS Stencils *(coming soon)*
+4. From SVG to Unreal: One Bedrock Call, Eight Renderers *(coming soon)*
+5. Same Prompt, Four Models, Three Passes: How Deterministic Is "Deterministic"? *(coming soon)*
 
 Links will be added as articles are published.
 
